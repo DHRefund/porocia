@@ -1,0 +1,168 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth-provider";
+import { logout } from "@/lib/firebase/auth";
+
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "Chat", href: "/chat" },
+  { label: "People", href: "/people" },
+  { label: "Knowledge", href: "/knowledge" },
+  { label: "Announcements", href: "/announcements" },
+  { label: "Profile", href: "/profile" },
+];
+
+const getInitials = (name: string) => {
+  if (!name) return "?";
+  const parts = name.trim().split(" ");
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+};
+
+export function SiteHeader() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, profile, loading } = useAuth();
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const displayName = profile?.displayName || user?.email?.split("@")[0] || "User";
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleLogout = async () => {
+    setOpen(false);
+    await logout();
+    router.push("/login");
+  };
+
+  return (
+    <header className="w-full border-b border-border bg-background">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
+        <div className="flex items-center gap-10">
+          <Link
+            href="/"
+            className="font-heading text-[1.9rem] leading-none tracking-[-0.03em] text-[--color-near-black]"
+          >
+            POROCIA
+          </Link>
+
+          <nav className="hidden items-center gap-8 md:flex">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-[15px] font-medium transition-all hover:text-[--color-near-black]",
+                    isActive
+                      ? "text-[--color-near-black] font-semibold underline decoration-[--color-terracotta] decoration-2 underline-offset-[6px]"
+                      : "text-[--color-olive-gray]"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Right side */}
+        <div className="hidden items-center md:flex">
+          {loading ? (
+            <div className="h-9 w-9 animate-pulse rounded-xl bg-[--color-border-cream]" />
+          ) : user ? (
+            // Dropdown trigger
+            <div ref={dropdownRef} className="relative">
+              <button
+                onClick={() => setOpen((v) => !v)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2a2a27] text-xs font-bold text-[--color-ivory] transition-opacity hover:opacity-80 focus:outline-none"
+                title={displayName}
+              >
+                {getInitials(displayName)}
+              </button>
+
+              {/* Dropdown panel — canh giữa theo avatar, nền đặc không trong suốt */}
+              {open && (
+                <div className="absolute left-1/2 top-[calc(100%+10px)] z-50 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border border-[#e8e2d9] bg-[#faf8f4] shadow-[0_12px_40px_rgba(0,0,0,0.14)]">
+                  {/* User info header */}
+                  <div className="border-b border-[--color-border-cream] px-4 py-3">
+                    <p className="text-[13px] font-semibold text-[--color-near-black]">{displayName}</p>
+                    <p className="text-[11px] text-[--color-stone-gray]">{user.email}</p>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="py-1.5">
+                    <Link
+                      href="/profile"
+                      onClick={() => setOpen(false)}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[--color-dark-warm] transition-colors hover:bg-[--color-border-cream]"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[--color-stone-gray]">
+                        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                      </svg>
+                      View Profile
+                    </Link>
+
+                    <Link
+                      href="/chat"
+                      onClick={() => setOpen(false)}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[--color-dark-warm] transition-colors hover:bg-[--color-border-cream]"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[--color-stone-gray]">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      Go to Chat
+                    </Link>
+                  </div>
+
+                  {/* Logout */}
+                  <div className="border-t border-[--color-border-cream] py-1.5">
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[--color-dark-warm] transition-colors hover:bg-[#fef0e4] hover:text-[--color-terracotta]"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[--color-stone-gray]">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+                      </svg>
+                      Đăng xuất
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="px-3 py-2 text-[15px] font-medium text-[--color-olive-gray] hover:text-[--color-near-black]"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/login"
+                className="ml-2 inline-flex h-11 items-center justify-center rounded-xl border border-[--color-terracotta] bg-[--color-terracotta] px-5 text-[15px] font-medium text-[--color-ivory] shadow-none hover:bg-[#bf5d3c]"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
