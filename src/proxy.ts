@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Middleware này chạy trên Vercel Edge Network, siêu tốc!
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Lấy giá trị cookie session Server-Side
   const session = request.cookies.get('__session')?.value;
   const isLoginPage = request.nextUrl.pathname.startsWith('/login');
