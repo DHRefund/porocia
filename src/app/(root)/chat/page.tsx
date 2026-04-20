@@ -53,7 +53,7 @@ export default function ChatPage() {
 
           <div className="space-y-8">
             {messages.map((msg) => (
-              <ChatBubble key={msg.id} msg={msg} isMine={msg.senderId === user.uid} />
+              <ChatBubble key={msg.id} msg={msg} isMine={msg.senderId === user?.uid} />
             ))}
           </div>
 
