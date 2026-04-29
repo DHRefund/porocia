@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import {
   ChatMessage,
-  ensureMainChannel,
+  ensureChannel,
   getLatestMessages,
   getOlderMessages,
   listenLatestMessages,
@@ -11,7 +11,7 @@ import {
 import { User } from "firebase/auth";
 import { UserProfile } from "@/components/auth-provider";
 
-export function useChat(user: User | null, profile: UserProfile | null) {
+export function useChat(channelId: string, user: User | null, profile: UserProfile | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -24,7 +24,7 @@ export function useChat(user: User | null, profile: UserProfile | null) {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !channelId) {
       setInitializing(false);
       return;
     }
@@ -32,16 +32,17 @@ export function useChat(user: User | null, profile: UserProfile | null) {
     let unsubscribe: (() => void) | undefined;
 
     const init = async () => {
-      await ensureMainChannel(user.uid);
+      // For now, ensuring a generic channel if needed, or assume it's created
+      await ensureChannel(channelId, channelId, user.uid);
 
-      const firstPage = await getLatestMessages();
+      const firstPage = await getLatestMessages(channelId);
       setMessages(firstPage.messages);
       setLastVisible(firstPage.lastVisible);
       setHasMore(firstPage.messages.length >= 20);
       setInitializing(false);
       initializedRef.current = true;
 
-      unsubscribe = listenLatestMessages((latestMessages) => {
+      unsubscribe = listenLatestMessages(channelId, (latestMessages) => {
         setMessages((prev) => {
           const olderPart = prev.length > latestMessages.length 
             ? prev.slice(0, prev.length - latestMessages.length) 
@@ -58,7 +59,7 @@ export function useChat(user: User | null, profile: UserProfile | null) {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [user]);
+  }, [user, channelId]);
 
   useEffect(() => {
     if (!initializedRef.current) return;
@@ -70,7 +71,7 @@ export function useChat(user: User | null, profile: UserProfile | null) {
 
     try {
       setLoadingMore(true);
-      const result = await getOlderMessages(lastVisible);
+      const result = await getOlderMessages(channelId, lastVisible);
 
       setMessages((prev) => {
         const merged = [...result.messages, ...prev];
@@ -92,6 +93,7 @@ export function useChat(user: User | null, profile: UserProfile | null) {
       setSending(true);
 
       await sendMessage({
+        channelId,
         text: input,
         senderId: user.uid,
         senderEmail: user.email || "",

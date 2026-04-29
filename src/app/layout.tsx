@@ -1,33 +1,32 @@
 import "./globals.css";
 import Link from "next/link";
 import { AuthProvider } from "@/components/auth-provider";
-import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { Inter, Instrument_Serif } from "next/font/google";
+import { Geist, Inter, Noto_Serif_JP } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
-const inter = Inter({
-  subsets: ["latin"],
+
+const geistSans = Geist({
   variable: "--font-sans",
-});
-
-const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-heading",
+  display: "swap",
+});
+
+
+const notoSerifJP = Noto_Serif_JP({
+  weight: ["400","700"],
+  subsets: ["latin"],
+  variable: "--font-noto-serif-jp",
+  preload: false,
+  display: "swap", // ✅ Tránh blocking render
 });
 
 
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({children,}: { children: React.ReactNode;}) {
   return (
-    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
+    <html lang="en" className={`${geistSans.variable}  ${notoSerifJP.variable}`}>
       <body>
         <AuthProvider>
           <SiteHeader />

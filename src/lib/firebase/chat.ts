@@ -27,17 +27,16 @@ export type ChatMessage = {
   updatedAt?: any | null;
 };
 
-const CHANNEL_ID = "main";
 const PAGE_SIZE = 20;
 
-export async function ensureMainChannel(uid: string) {
-  const channelRef = doc(db, "channels", CHANNEL_ID);
+export async function ensureChannel(channelId: string, name: string, uid: string) {
+  const channelRef = doc(db, "channels", channelId);
   const snap = await getDoc(channelRef);
 
   if (!snap.exists()) {
     await setDoc(channelRef, {
-      name: "general",
-      description: "Main channel for all team members",
+      name,
+      description: `Channel ${name}`,
       createdAt: serverTimestamp(),
       createdBy: uid,
       isArchived: false,
@@ -45,17 +44,29 @@ export async function ensureMainChannel(uid: string) {
   }
 }
 
+export async function getChannels() {
+  const channelsRef = collection(db, "channels");
+  const q = query(channelsRef, orderBy("createdAt", "asc"));
+  const snapshot = await getDocs(q);
+  
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+}
+
 export async function sendMessage(params: {
+  channelId: string;
   text: string;
   senderId: string;
   senderEmail: string;
   senderName: string;
 }) {
-  const { text, senderId, senderEmail, senderName } = params;
+  const { channelId, text, senderId, senderEmail, senderName } = params;
   const trimmed = text.trim();
   if (!trimmed) return;
 
-  const messagesRef = collection(db, "channels", CHANNEL_ID, "messages");
+  const messagesRef = collection(db, "channels", channelId, "messages");
 
   await addDoc(messagesRef, {
     text: trimmed,
@@ -68,8 +79,8 @@ export async function sendMessage(params: {
   });
 }
 
-export async function getLatestMessages() {
-  const messagesRef = collection(db, "channels", CHANNEL_ID, "messages");
+export async function getLatestMessages(channelId: string) {
+  const messagesRef = collection(db, "channels", channelId, "messages");
   const q = query(messagesRef, orderBy("createdAt", "desc"), limit(PAGE_SIZE));
   const snapshot = await getDocs(q);
 
@@ -85,9 +96,10 @@ export async function getLatestMessages() {
 }
 
 export async function getOlderMessages(
+  channelId: string,
   lastVisible: QueryDocumentSnapshot<DocumentData>
 ) {
-  const messagesRef = collection(db, "channels", CHANNEL_ID, "messages");
+  const messagesRef = collection(db, "channels", channelId, "messages");
   const q = query(
     messagesRef,
     orderBy("createdAt", "desc"),
@@ -114,9 +126,10 @@ export async function getOlderMessages(
  * MVP: nghe page mới nhất thôi.
  */
 export function listenLatestMessages(
+  channelId: string,
   callback: (messages: ChatMessage[]) => void
 ) {
-  const messagesRef = collection(db, "channels", CHANNEL_ID, "messages");
+  const messagesRef = collection(db, "channels", channelId, "messages");
   const q = query(messagesRef, orderBy("createdAt", "desc"), limit(PAGE_SIZE));
 
   return onSnapshot(q, (snapshot) => {
