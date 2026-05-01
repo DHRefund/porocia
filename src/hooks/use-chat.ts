@@ -6,6 +6,7 @@ import {
   getLatestMessages,
   getOlderMessages,
   listenLatestMessages,
+  markChannelAsRead,
   sendMessage,
 } from "@/lib/firebase/chat";
 import { User } from "firebase/auth";
@@ -32,7 +33,6 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     let unsubscribe: (() => void) | undefined;
 
     const init = async () => {
-      // For now, ensuring a generic channel if needed, or assume it's created
       await ensureChannel(channelId, channelId, user.uid);
 
       const firstPage = await getLatestMessages(channelId);
@@ -42,11 +42,15 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
       setInitializing(false);
       initializedRef.current = true;
 
+      // Mark channel as read when user opens it
+      await markChannelAsRead(channelId, user.uid);
+
       unsubscribe = listenLatestMessages(channelId, (latestMessages) => {
         setMessages((prev) => {
-          const olderPart = prev.length > latestMessages.length 
-            ? prev.slice(0, prev.length - latestMessages.length) 
-            : [];
+          const olderPart =
+            prev.length > latestMessages.length
+              ? prev.slice(0, prev.length - latestMessages.length)
+              : [];
           const merged = [...olderPart, ...latestMessages];
           const uniqueMap = new Map(merged.map((msg) => [msg.id, msg]));
           return Array.from(uniqueMap.values());
@@ -91,15 +95,17 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
 
     try {
       setSending(true);
-
       await sendMessage({
         channelId,
         text: input,
         senderId: user.uid,
         senderEmail: user.email || "",
-        senderName: profile?.displayName || user.displayName || user.email?.split("@")[0] || "Unknown User",
+        senderName:
+          profile?.displayName ||
+          user.displayName ||
+          user.email?.split("@")[0] ||
+          "Unknown User",
       });
-
       setInput("");
     } finally {
       setSending(false);

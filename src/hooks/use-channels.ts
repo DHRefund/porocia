@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getChannels } from "@/lib/firebase/chat";
+import { listenChannels } from "@/lib/firebase/chat";
 import { DocumentData } from "firebase/firestore";
 
 export function useChannels() {
@@ -8,32 +8,15 @@ export function useChannels() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    setLoading(true);
 
-    async function fetchChannels() {
-      try {
-        setLoading(true);
-        const data = await getChannels();
-        if (mounted) {
-          setChannels(data);
-          setError(null);
-        }
-      } catch (err) {
-        if (mounted) {
-          setError(err instanceof Error ? err : new Error("Failed to fetch channels"));
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
+    const unsubscribe = listenChannels((data) => {
+      setChannels(data);
+      setLoading(false);
+      setError(null);
+    });
 
-    fetchChannels();
-
-    return () => {
-      mounted = false;
-    };
+    return () => unsubscribe();
   }, []);
 
   return { channels, loading, error };

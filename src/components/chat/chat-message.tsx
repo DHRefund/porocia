@@ -1,4 +1,5 @@
 import { ChatMessage } from "@/lib/firebase/chat";
+import { ReadReceiptLabel } from "@/components/chat/read-receipt-label";
 
 const formatTime = (timestamp: any) => {
   if (!timestamp?.toDate) return "";
@@ -26,28 +27,41 @@ const formatSenderName = (name: string) => {
   return name;
 };
 
-export function ChatBubble({ msg, isMine }: { msg: ChatMessage; isMine: boolean }) {
+interface ChatBubbleProps {
+  msg: ChatMessage;
+  isMine: boolean;
+  channelId: string;
+  /** UID of the currently logged-in user — passed to ReadReceiptLabel */
+  currentUserId?: string;
+}
+
+export function ChatBubble({ msg, isMine, channelId, currentUserId }: ChatBubbleProps) {
   if (isMine) {
     return (
-      <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-2">
             <span className="text-[11px] font-medium tracking-wide text-[--color-stone-gray]">
               {formatTime(msg.createdAt)}
             </span>
-            <span className="text-[14px] font-semibold text-[--color-near-black]">
-              You
-            </span>
+            <span className="text-[14px] font-semibold text-[--color-near-black]">You</span>
           </div>
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[--color-border-warm] text-[11px] font-bold text-[--color-dark-warm]">
+          {/* <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[--color-border-warm] text-[11px] font-bold text-[--color-dark-warm]">
             {getInitials(formatSenderName(msg.senderName))}
-          </div>
+          </div> */}
         </div>
         <div className="relative max-w-[85%] rounded-[24px] border border-[#b8d4f0] bg-[#deeeff] px-6 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-          <div className="whitespace-pre-wrap text-[15px] leading-[1.6] text-[--color-dark-warm]">
-            {msg.text}
-          </div>
+          <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-[--color-dark-warm]">{msg.text}</div>
         </div>
+        {/* Read receipt — right-aligned for own messages */}
+        <ReadReceiptLabel
+          channelId={channelId}
+          messageId={msg.id}
+          senderId={msg.senderId}
+          readBy={msg.readBy ?? []}
+          isMine={true}
+          currentUserId={currentUserId}
+        />
       </div>
     );
   }
@@ -67,10 +81,17 @@ export function ChatBubble({ msg, isMine }: { msg: ChatMessage; isMine: boolean 
           </span>
         </div>
         <div className="max-w-[85%] rounded-[24px] border border-[#f5cdb0] bg-[#fef0e4] px-6 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-        <div className="whitespace-pre-wrap text-[15px] leading-[1.6] text-[--color-dark-warm]">
-          {msg.text}
+          <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-[--color-dark-warm]">{msg.text}</div>
         </div>
-        </div>
+        {/* Read receipt — left-aligned for others' messages */}
+        <ReadReceiptLabel
+          channelId={channelId}
+          messageId={msg.id}
+          senderId={msg.senderId}
+          readBy={msg.readBy ?? []}
+          isMine={false}
+          currentUserId={currentUserId}
+        />
       </div>
     </div>
   );

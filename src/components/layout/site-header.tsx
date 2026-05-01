@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { logout } from "@/lib/firebase/auth";
+import { useChannels } from "@/hooks/use-channels";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -27,10 +28,16 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile, loading } = useAuth();
+  const { channels } = useChannels();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const displayName = profile?.displayName || user?.email?.split("@")[0] || "User";
+
+  // True if any channel has unread messages for the current user
+  const hasChatUnread =
+    !!user &&
+    channels.some((ch) => (ch.unreadCount?.[user.uid] ?? 0) > 0);
 
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {
@@ -63,18 +70,22 @@ export function SiteHeader() {
           <nav className="hidden items-center gap-8 md:flex">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
+              const showUnreadDot = item.href === "/chat" && hasChatUnread && !isActive;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-[15px] font-medium transition-all hover:text-[--color-near-black]",
+                    "relative text-[15px] font-medium transition-all hover:text-[--color-near-black]",
                     isActive
                       ? "text-[--color-near-black] font-semibold underline decoration-[--color-terracotta] decoration-2 underline-offset-[6px]"
                       : "text-[--color-olive-gray]"
                   )}
                 >
                   {item.label}
+                  {showUnreadDot && (
+                    <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                  )}
                 </Link>
               );
             })}

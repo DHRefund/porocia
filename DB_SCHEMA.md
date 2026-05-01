@@ -18,6 +18,16 @@ Stores user profiles and is automatically synchronized with Firebase Auth upon l
   - `createdAt` *(Firestore Timestamp)*: Time of account creation.
   - `lastLoginAt` *(Firestore Timestamp)*: Time of last login (updated automatically).
 
+#### Sub-collection: `readState/{channelId}`
+Tracks each user's last read position per channel.
+
+- **Document ID:** `channelId`
+- **Fields:**
+  - `lastReadAt` *(Firestore Timestamp)*: Last time user opened this channel.
+  - `lastReadMessageId` *(string)*: Document ID of the last message the user read.
+
+---
+
 ### `channels` (Root Collection)
 Stores chat channels.
 
@@ -28,8 +38,10 @@ Stores chat channels.
   - `createdBy` *(string)*: `uid` of the user who created the channel.
   - `isArchived` *(boolean)*: Whether the channel is archived (default: `false`).
   - `createdAt` *(Firestore Timestamp)*: Time of creation.
+  - `members` *(string[])*: Array of `uid`s who have participated in this channel. Updated via `arrayUnion` each time a user sends a message.
+  - `unreadCount` *(Record\<string, number\>)*: Map of `uid → unread message count`. Incremented for all members except sender on each new message. Reset to `0` when a member opens the channel (`markChannelAsRead`).
 
-### `messages` (Sub-collection under `channels/{channelId}`)
+#### Sub-collection: `messages/{messageId}`
 Stores individual chat messages within a specific channel.
 
 - **Document ID:** Auto-generated ID.
@@ -41,7 +53,22 @@ Stores individual chat messages within a specific channel.
   - `type` *(string)*: Message type (currently `"text"`).
   - `createdAt` *(Firestore Timestamp)*: Time the message was sent.
   - `updatedAt` *(Firestore Timestamp | null)*: Time the message was last edited.
+  - `readBy` *(string[])*: Array of `uid`s who have read this message. Sender is pre-populated on creation.
+  - `readAt` *(Record\<string, Timestamp\>)*: Map of `uid → timestamp` recording when each user read the message.
 
-## 2. Security & Indexing Notes
-- *To be expanded as Firestore Security Rules are implemented.*
-- Requires composite indexes for queries sorting by `createdAt` in `messages` sub-collections.
+---
+
+## 2. Read Receipt Logic Summary
+
+| Event | Firestore Writes |
+|-------|-----------------|
+| User **sends** a message | New `messages` doc with `readBy: [senderUid]`; `channels/{id}.unreadCount[uid] += 1` for all other current members; `channels/{id}.members` updated via `arrayUnion` |
+| User **opens** a channel | `messages/{latest}.readBy` += `uid`; `messages/{latest}.readAt[uid]` = now; `users/{uid}/readState/{channelId}` written; `channels/{id}.unreadCount[uid]` = 0 |
+
+---
+
+## 3. Security & Indexing Notes
+- Requires composite index on `messages` sub-collection: `createdAt DESC`.
+- `unreadCount` uses Firestore `increment()` server-side to avoid race conditions.
+- All read receipt writes are batched via `writeBatch` for atomicity.
+- *Security Rules: to be expanded.*

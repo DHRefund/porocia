@@ -36,7 +36,7 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden h-full relative">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 pb-20">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mb-8 flex justify-center">
           {hasMore ? (
             <button
@@ -55,14 +55,20 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
 
         <div className="space-y-8">
           {messages.map((msg) => (
-            <ChatBubble key={msg.id} msg={msg} isMine={msg.senderId === user?.uid} />
+            <ChatBubble
+              key={msg.id}
+              msg={msg}
+              isMine={msg.senderId === user?.uid}
+              channelId={channelId}
+              currentUserId={user?.uid}
+            />
           ))}
         </div>
 
         <div ref={bottomRef} />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-[--color-border-cream] p-4">
+      <div className="shrink-0 bg-background/95 backdrop-blur-sm border-t border-[--color-border-cream] p-4">
         <ChatInput 
           input={input} 
           setInput={setInput} 
