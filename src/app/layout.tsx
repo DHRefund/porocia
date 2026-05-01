@@ -29,8 +29,12 @@ export default function RootLayout({children,}: { children: React.ReactNode;}) {
     <html lang="en" className={`${geistSans.variable}  ${notoSerifJP.variable}`}>
       <body>
         <AuthProvider>
-          <SiteHeader />
-          {children}
+          <div className="flex h-screen flex-col overflow-hidden bg-background">
+            <SiteHeader />
+            <main className="flex-1 min-h-0 overflow-y-auto">
+              {children}
+            </main>
+          </div>
         </AuthProvider>
       </body>
     </html>

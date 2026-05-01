@@ -62,7 +62,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-10">
           <Link
             href="/"
-            className="font-heading text-[1.9rem] leading-none tracking-[-0.03em] text-[--color-near-black]"
+            className="font-heading text-[1.9rem] leading-none tracking-[-0.03em] text-near-black"
           >
             POROCIA
           </Link>
@@ -76,10 +76,10 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative text-[15px] font-medium transition-all hover:text-[--color-near-black]",
+                    "relative text-[15px] font-medium transition-all hover:text-near-black",
                     isActive
-                      ? "text-[--color-near-black] font-semibold underline decoration-[--color-terracotta] decoration-2 underline-offset-[6px]"
-                      : "text-[--color-olive-gray]"
+                      ? "text-near-black font-semibold underline decoration-terracotta decoration-2 underline-offset-[6px]"
+                      : "text-olive"
                   )}
                 >
                   {item.label}
@@ -95,13 +95,13 @@ export function SiteHeader() {
         {/* Right side */}
         <div className="hidden items-center md:flex">
           {loading ? (
-            <div className="h-9 w-9 animate-pulse rounded-xl bg-[--color-border-cream]" />
+            <div className="h-9 w-9 animate-pulse rounded-xl bg-cream" />
           ) : user ? (
             // Dropdown trigger
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setOpen((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2a2a27] text-xs font-bold text-[--color-ivory] transition-opacity hover:opacity-80 focus:outline-none"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2a2a27] text-xs font-bold text-ivory transition-opacity hover:opacity-80 focus:outline-none"
                 title={displayName}
               >
                 {getInitials(displayName)}
@@ -111,9 +111,9 @@ export function SiteHeader() {
               {open && (
                 <div className="absolute left-1/2 top-[calc(100%+10px)] z-50 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border border-[#e8e2d9] bg-[#faf8f4] shadow-[0_12px_40px_rgba(0,0,0,0.14)]">
                   {/* User info header */}
-                  <div className="border-b border-[--color-border-cream] px-4 py-3">
-                    <p className="text-[13px] font-semibold text-[--color-near-black]">{displayName}</p>
-                    <p className="text-[11px] text-[--color-stone-gray]">{user.email}</p>
+                  <div className="border-b border-cream px-4 py-3">
+                    <p className="text-[13px] font-semibold text-near-black">{displayName}</p>
+                    <p className="text-[11px] text-stone">{user.email}</p>
                   </div>
 
                   {/* Menu items */}
@@ -121,9 +121,9 @@ export function SiteHeader() {
                     <Link
                       href="/profile"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[--color-dark-warm] transition-colors hover:bg-[--color-border-cream]"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-dark transition-colors hover:bg-cream"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[--color-stone-gray]">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
                         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                       </svg>
                       View Profile
@@ -132,9 +132,9 @@ export function SiteHeader() {
                     <Link
                       href="/chat"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[--color-dark-warm] transition-colors hover:bg-[--color-border-cream]"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-dark transition-colors hover:bg-cream"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[--color-stone-gray]">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                       </svg>
                       Go to Chat
@@ -142,12 +142,12 @@ export function SiteHeader() {
                   </div>
 
                   {/* Logout */}
-                  <div className="border-t border-[--color-border-cream] py-1.5">
+                  <div className="border-t border-cream py-1.5">
                     <button
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[--color-dark-warm] transition-colors hover:bg-[#fef0e4] hover:text-[--color-terracotta]"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-dark transition-colors hover:bg-[#fef0e4] hover:text-terracotta"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[--color-stone-gray]">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
                       </svg>
                       Đăng xuất
@@ -160,13 +160,13 @@ export function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-2 text-[15px] font-medium text-[--color-olive-gray] hover:text-[--color-near-black]"
+                className="px-3 py-2 text-[15px] font-medium text-olive hover:text-near-black"
               >
                 Sign In
               </Link>
               <Link
                 href="/login"
-                className="ml-2 inline-flex h-11 items-center justify-center rounded-xl border border-[--color-terracotta] bg-[--color-terracotta] px-5 text-[15px] font-medium text-[--color-ivory] shadow-none hover:bg-[#bf5d3c]"
+                className="ml-2 inline-flex h-11 items-center justify-center rounded-xl border border-terracotta bg-terracotta px-5 text-[15px] font-medium text-ivory shadow-none hover:bg-[#bf5d3c]"
               >
                 Get Started
               </Link>

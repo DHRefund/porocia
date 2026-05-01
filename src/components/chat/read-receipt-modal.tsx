@@ -9,6 +9,7 @@ interface ReadReceiptModalProps {
   messageId: string;
   readBy: string[];
   senderId: string;
+  currentUserId?: string;
   onClose: () => void;
 }
 
@@ -32,7 +33,7 @@ function AvatarFallback({ name, photoURL }: { name: string; photoURL?: string })
     );
   }
   return (
-    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#2a2a27] text-xs font-bold text-[--color-ivory]">
+    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#2a2a27] text-xs font-bold text-ivory">
       {getInitials(name)}
     </div>
   );
@@ -43,6 +44,7 @@ export function ReadReceiptModal({
   messageId,
   readBy,
   senderId,
+  currentUserId,
   onClose,
 }: ReadReceiptModalProps) {
   const [tab, setTab] = useState<Tab>("read");
@@ -50,8 +52,8 @@ export function ReadReceiptModal({
   const [loading, setLoading] = useState(true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Filter out the sender from readBy for the count
-  const readerUids = readBy.filter((uid) => uid !== senderId);
+  // Filter out the sender and current user from readBy for the count
+  const readerUids = readBy.filter((uid) => uid !== senderId && uid !== currentUserId);
 
   useEffect(() => {
     let mounted = true;
@@ -88,15 +90,15 @@ export function ReadReceiptModal({
       onClick={handleBackdropClick}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px]"
     >
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-[--color-border-cream] bg-card shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-cream bg-card shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[--color-border-cream] px-5 py-4">
-          <h3 className="text-[15px] font-semibold text-[--color-near-black]">
+        <div className="flex items-center justify-between border-b border-cream px-5 py-4">
+          <h3 className="text-[15px] font-semibold text-near-black">
             Read By ({readerUids.length})
           </h3>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[--color-stone-gray] transition-colors hover:bg-[--color-border-cream] hover:text-[--color-near-black]"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-stone transition-colors hover:bg-cream hover:text-near-black"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -105,7 +107,7 @@ export function ReadReceiptModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[--color-border-cream]">
+        <div className="flex border-b border-cream">
           {(["read", "unread"] as Tab[]).map((t) => (
             <button
               key={t}
@@ -113,8 +115,8 @@ export function ReadReceiptModal({
               className={cn(
                 "flex-1 py-3 text-[13px] font-semibold uppercase tracking-widest transition-colors",
                 tab === t
-                  ? "border-b-2 border-[--color-terracotta] text-[--color-terracotta]"
-                  : "text-[--color-stone-gray] hover:text-[--color-near-black]"
+                  ? "border-b-2 border-terracotta text-terracotta"
+                  : "text-stone hover:text-near-black"
               )}
             >
               {t === "read" ? `Read (${readerUids.length})` : "Unread"}
@@ -127,22 +129,22 @@ export function ReadReceiptModal({
           {tab === "read" ? (
             loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[--color-border-warm] border-t-[--color-terracotta]" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-warm border-t-terracotta" />
               </div>
             ) : readProfiles.length === 0 ? (
-              <p className="py-8 text-center text-[13px] text-[--color-stone-gray]">
+              <p className="py-8 text-center text-[13px] text-stone">
                 No one has read this message yet.
               </p>
             ) : (
               <ul>
                 {readProfiles.map((p) => (
-                  <li key={p.uid} className="flex items-center gap-3 px-5 py-3 hover:bg-[--color-border-cream]/40">
+                  <li key={p.uid} className="flex items-center gap-3 px-5 py-3 hover:bg-cream/40">
                     <AvatarFallback name={p.displayName} photoURL={p.photoURL} />
                     <div className="min-w-0">
-                      <p className="truncate text-[14px] font-medium text-[--color-near-black]">
+                      <p className="truncate text-[14px] font-medium text-near-black">
                         {p.displayName}
                       </p>
-                      <p className="truncate text-[12px] text-[--color-olive-gray]">
+                      <p className="truncate text-[12px] text-olive">
                         {p.role} · {p.email}
                       </p>
                     </div>
@@ -151,7 +153,7 @@ export function ReadReceiptModal({
               </ul>
             )
           ) : (
-            <p className="py-8 text-center text-[13px] text-[--color-stone-gray]">
+            <p className="py-8 text-center text-[13px] text-stone">
               Unread tracking requires a channel members list.
             </p>
           )}

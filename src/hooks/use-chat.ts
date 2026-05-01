@@ -112,6 +112,36 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     }
   };
 
+  const markAsRead = async () => {
+    if (!user || !channelId || messages.length === 0) return;
+    const latestMessage = messages[messages.length - 1];
+    if (latestMessage.senderId !== user.uid) {
+      const hasRead = latestMessage.readBy?.includes(user.uid);
+      if (!hasRead) {
+        try {
+          await markChannelAsRead(channelId, user.uid);
+        } catch (error) {
+          console.error("Failed to mark as read:", error);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    if (document.hasFocus()) {
+      markAsRead();
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      markAsRead();
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [user, channelId, messages]);
+
   return {
     messages,
     input,
@@ -122,6 +152,7 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     hasMore,
     handleLoadMore,
     handleSend,
+    markAsRead,
     bottomRef,
   };
 }

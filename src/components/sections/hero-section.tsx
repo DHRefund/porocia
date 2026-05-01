@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function HeroSection() {
   return (
-    <main className="relative overflow-hidden bg-[--color-parchment]">
+    <main className="relative overflow-hidden bg-parchment">
       {/* Decorative sketch SVG — góc phải */}
       <div className="pointer-events-none absolute right-[-40px] top-[40px] select-none opacity-[0.13] md:right-[60px] md:top-[60px] md:opacity-[0.18]">
         <svg
@@ -35,15 +35,15 @@ export function HeroSection() {
       <section className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl flex-col items-center justify-center px-6 py-24 text-center lg:px-10">
 
         {/* Badge */}
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[--color-border-cream] bg-[--color-ivory] px-4 py-2 shadow-sm">
-          <span className="text-[--color-terracotta]">✦</span>
-          <span className="text-[13px] font-medium tracking-wide text-[--color-olive-gray]">
+        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-cream bg-ivory px-4 py-2 shadow-sm">
+          <span className="text-terracotta">✦</span>
+          <span className="text-[13px] font-medium tracking-wide text-olive">
             不必要なものを省いた、集中するチームのためのワークスペース
           </span>
         </div>
 
         {/* Headline */}
-        <h1 className="font-heading max-w-3xl text-[clamp(3rem,8vw,6rem)] leading-[1.02] tracking-[-0.04em] text-[--color-near-black]">
+        <h1 className="font-heading max-w-3xl text-[clamp(3rem,8vw,6rem)] leading-[1.02] tracking-[-0.04em] text-near-black">
           No Laugh
           <br />
           <em className="font-heading italic text-[#da7756]">
@@ -52,7 +52,7 @@ export function HeroSection() {
         </h1>
 
         {/* Subtitle */}
-        <p className="mt-8 max-w-xl text-[1.1rem] leading-[1.75] text-[--color-olive-gray]">
+        <p className="mt-8 max-w-xl text-[1.1rem] leading-[1.75] text-olive">
           仕事は真剣に。でも、人はそうじゃなくていい。
   <br />
   本当に一緒にいることを楽しめるチームから、
@@ -64,17 +64,17 @@ export function HeroSection() {
         <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/chat"
-            className="inline-flex h-13 items-center justify-center rounded-2xl bg-[--color-terracotta] px-8 py-3.5 text-[15px] font-semibold text-[--color-ivory] shadow-[0_4px_20px_rgba(201,100,66,0.28)] transition-all hover:bg-[#bf5d3c] hover:shadow-[0_6px_24px_rgba(201,100,66,0.36)] active:scale-[0.98]"
+            className="inline-flex h-13 items-center justify-center rounded-2xl bg-terracotta px-8 py-3.5 text-[15px] font-semibold text-ivory shadow-[0_4px_20px_rgba(201,100,66,0.28)] transition-all hover:bg-[#bf5d3c] hover:shadow-[0_6px_24px_rgba(201,100,66,0.36)] active:scale-[0.98]"
           >
             ワークスペースへ
           </Link>
 
           <Link
             href="/about"
-            className="group relative inline-flex h-13 items-center gap-2 px-6 py-3.5 text-[15px] font-medium text-[--color-dark-warm] transition-colors hover:text-[--color-near-black]"
+            className="group relative inline-flex h-13 items-center gap-2 px-6 py-3.5 text-[15px] font-medium text-dark transition-colors hover:text-near-black"
           >
             詳しく見る
-            <span className="absolute bottom-2.5 left-6 right-6 h-px origin-left scale-x-100 bg-[--color-dark-warm] transition-transform group-hover:bg-[--color-terracotta]" />
+            <span className="absolute bottom-2.5 left-6 right-6 h-px origin-left scale-x-100 bg-dark transition-transform group-hover:bg-terracotta" />
           </Link>
         </div>
 

@@ -61,14 +61,14 @@
   --color-parchment: var(--parchment);
   --color-ivory: var(--ivory);
   --color-near-black: var(--near-black);
-  --color-olive-gray: var(--olive-gray);
-  --color-stone-gray: var(--stone-gray);
-  --color-dark-warm: var(--dark-warm);
-  --color-warm-sand: var(--warm-sand);
-  --color-border-cream: var(--border-cream);
-  --color-border-warm: var(--border-warm);
+  --color-olive: var(--olive-gray);
+  --color-stone: var(--stone-gray);
+  --color-dark: var(--dark-warm);
+  --color-sand: var(--warm-sand);
+  --color-cream: var(--border-cream);
+  --color-warm: var(--border-warm);
   --color-terracotta: var(--terracotta);
-  --color-warm-silver: var(--warm-silver);
+  --color-silver: var(--warm-silver);
 }
 
 :root {
@@ -201,5 +201,23 @@
 
   a {
     @apply transition-colors;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-stone/20 rounded-full transition-colors hover:bg-stone/40;
+  }
+
+  /* Support for Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(135, 134, 127, 0.2) transparent;
   }
 }

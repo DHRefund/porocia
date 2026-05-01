@@ -127,15 +127,15 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="w-full border-[--color-border-cream] bg-[--color-ivory] shadow-[0_4px_24px_rgba(0,0,0,0.04)] sm:max-w-md">
+    <Card className="w-full border-cream bg-ivory shadow-[0_4px_24px_rgba(0,0,0,0.04)] sm:max-w-md">
       <CardHeader className="space-y-2">
-        <CardTitle className="font-heading text-3xl tracking-[-0.03em] text-[--color-near-black]">
+        <CardTitle className="font-heading text-3xl tracking-[-0.03em] text-near-black">
           {mode === "sign-in"
             ? "ログイン"
             : "アカウント作成"}
         </CardTitle>
 
-        <CardDescription className="text-sm leading-6 text-[--color-olive-gray]">
+        <CardDescription className="text-sm leading-6 text-olive">
           {mode === "sign-in"
             ? "社内ワークスペースへアクセスします。"
             : "ワークスペース参加用のアカウントを作成します。"}
@@ -144,7 +144,7 @@ export function SignInForm() {
 
       <CardContent className="space-y-5">
         {/* Tabs */}
-        <div className="flex gap-1 rounded-xl border border-[--color-border-cream] bg-[--color-parchment] p-1">
+        <div className="flex gap-1 rounded-xl border border-cream bg-parchment p-1">
           {(["sign-in", "sign-up"] as const).map(
             (tab) => (
               <button
@@ -153,8 +153,8 @@ export function SignInForm() {
                 onClick={() => switchMode(tab)}
                 className={`flex-1 h-8 rounded-lg text-[13px] font-medium transition-colors ${
                   mode === tab
-                    ? "bg-[--color-ivory] text-[--color-near-black] shadow-sm"
-                    : "text-[--color-olive-gray] hover:text-[--color-dark-warm]"
+                    ? "bg-ivory text-near-black shadow-sm"
+                    : "text-olive hover:text-dark"
                 }`}
               >
                 {tab === "sign-in"
@@ -185,7 +185,7 @@ export function SignInForm() {
                 >
                   <FieldLabel
                     htmlFor="email"
-                    className="text-[--color-dark-warm]"
+                    className="text-dark"
                   >
                     メールアドレス
                   </FieldLabel>
@@ -194,7 +194,7 @@ export function SignInForm() {
                     {...field}
                     id="email"
                     type="email"
-                    className="h-12 rounded-2xl border-[--color-border-warm] bg-[--color-ivory] text-[--color-near-black]"
+                    className="h-12 rounded-2xl border border-warm bg-ivory text-near-black"
                   />
 
                   {fieldState.invalid && (
@@ -223,7 +223,7 @@ export function SignInForm() {
                 >
                   <FieldLabel
                     htmlFor="password"
-                    className="text-[--color-dark-warm]"
+                    className="text-dark"
                   >
                     パスワード
                   </FieldLabel>
@@ -233,7 +233,7 @@ export function SignInForm() {
                     id="password"
                     type="password"
                     placeholder="パスワードを入力"
-                    className="h-12 rounded-2xl border-[--color-border-warm] bg-[--color-ivory] text-[--color-near-black]"
+                    className="h-12 rounded-2xl border border-warm bg-ivory text-near-black"
                   />
 
                   {fieldState.invalid && (
@@ -263,7 +263,7 @@ export function SignInForm() {
                   >
                     <FieldLabel
                       htmlFor="confirmPassword"
-                      className="text-[--color-dark-warm]"
+                      className="text-dark"
                     >
                       パスワード確認
                     </FieldLabel>
@@ -276,7 +276,7 @@ export function SignInForm() {
                       value={
                         field.value || ""
                       }
-                      className="h-12 rounded-2xl border-[--color-border-warm] bg-[--color-ivory] text-[--color-near-black]"
+                      className="h-12 rounded-2xl border border-warm bg-ivory text-near-black"
                     />
 
                     {fieldState.invalid && (
@@ -309,7 +309,7 @@ export function SignInForm() {
           disabled={
             form.formState.isSubmitting
           }
-          className="h-12 w-full rounded-2xl bg-[--color-terracotta] text-[--color-ivory] hover:bg-[#bf5d3c] disabled:opacity-75"
+          className="h-12 w-full rounded-2xl bg-terracotta text-ivory hover:bg-[#bf5d3c] disabled:opacity-75"
         >
           {form.formState.isSubmitting
             ? "処理中..."
@@ -322,7 +322,7 @@ export function SignInForm() {
         {mode === "sign-in" && (
           <Link
             href="/forgot-password"
-            className="block text-center text-[12px] text-[--color-stone-gray] underline underline-offset-4 hover:text-[--color-terracotta]"
+            className="block text-center text-[12px] text-stone underline underline-offset-4 hover:text-terracotta"
           >
             パスワードをお忘れですか？
           </Link>
@@ -330,20 +330,20 @@ export function SignInForm() {
 
         {/* Divider */}
         <div className="flex w-full items-center gap-3 py-1">
-          <div className="h-px flex-1 bg-[--color-border-cream]" />
+          <div className="h-px flex-1 bg-cream" />
 
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[--color-stone-gray]">
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone">
             または
           </span>
 
-          <div className="h-px flex-1 bg-[--color-border-cream]" />
+          <div className="h-px flex-1 bg-cream" />
         </div>
 
         {/* Google */}
         <Button
           type="button"
           variant="secondary"
-          className="h-12 w-full rounded-2xl border border-[--color-border-warm] bg-[--color-warm-sand] text-[--color-dark-warm] shadow-none hover:bg-[#e2dfd3]"
+          className="h-12 w-full rounded-2xl border border-warm bg-sand text-dark shadow-none hover:bg-[#e2dfd3]"
         >
           Googleで続行
         </Button>

@@ -43,7 +43,7 @@ export function ReadReceiptLabel({
       <button
         onClick={() => setModalOpen(true)}
         className={cn(
-          "mt-1 flex items-center gap-1 text-xs text-[--color-stone-gray] transition-colors hover:text-[--color-olive-gray]",
+          "mt-1 flex items-center gap-1 text-xs text-stone transition-colors hover:text-olive",
           isMine ? "justify-end pr-1" : "justify-start pl-1"
         )}
         title="See who read this"
@@ -61,6 +61,7 @@ export function ReadReceiptLabel({
           messageId={messageId}
           readBy={readBy}
           senderId={senderId}
+          currentUserId={currentUserId}
           onClose={() => setModalOpen(false)}
         />
       )}

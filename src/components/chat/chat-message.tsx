@@ -33,32 +33,33 @@ interface ChatBubbleProps {
   channelId: string;
   /** UID of the currently logged-in user — passed to ReadReceiptLabel */
   currentUserId?: string;
+  /** Filtered list of UIDs whose latest read message is this one */
+  latestReadBy?: string[];
 }
 
-export function ChatBubble({ msg, isMine, channelId, currentUserId }: ChatBubbleProps) {
+export function ChatBubble({ msg, isMine, channelId, currentUserId, latestReadBy }: ChatBubbleProps) {
   if (isMine) {
     return (
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-2">
-            <span className="text-[11px] font-medium tracking-wide text-[--color-stone-gray]">
+          <div className="flex items-baseline gap-2 mr-1">
+            <span className="text-[11px] font-medium tracking-wide text-stone">
               {formatTime(msg.createdAt)}
             </span>
-            <span className="text-[14px] font-semibold text-[--color-near-black]">You</span>
           </div>
-          {/* <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[--color-border-warm] text-[11px] font-bold text-[--color-dark-warm]">
+          {/* <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-warm text-[11px] font-bold text-dark">
             {getInitials(formatSenderName(msg.senderName))}
           </div> */}
         </div>
-        <div className="relative max-w-[85%] rounded-[24px] border border-[#b8d4f0] bg-[#deeeff] px-6 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-          <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-[--color-dark-warm]">{msg.text}</div>
+        <div className="relative max-w-[60%] rounded-2xl bg-terracotta px-5 py-2.5 shadow-sm">
+          <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-white">{msg.text}</div>
         </div>
         {/* Read receipt — right-aligned for own messages */}
         <ReadReceiptLabel
           channelId={channelId}
           messageId={msg.id}
           senderId={msg.senderId}
-          readBy={msg.readBy ?? []}
+          readBy={latestReadBy ?? []}
           isMine={true}
           currentUserId={currentUserId}
         />
@@ -68,27 +69,27 @@ export function ChatBubble({ msg, isMine, channelId, currentUserId }: ChatBubble
 
   return (
     <div className="flex flex-row items-start gap-4">
-      <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#2a2a27] text-sm font-bold text-[--color-ivory]">
+      <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
         {getInitials(formatSenderName(msg.senderName))}
       </div>
       <div className="flex flex-col gap-1">
-        <div className="flex items-baseline gap-2">
-          <span className="text-[14px] font-semibold text-[--color-near-black]">
+        <div className="flex items-baseline gap-2 ml-1">
+          <span className="text-[13px] font-semibold text-near-black">
             {formatSenderName(msg.senderName)}
           </span>
-          <span className="text-[11px] font-medium tracking-wide text-[--color-stone-gray]">
+          <span className="text-[11px] font-medium tracking-wide text-stone">
             {formatTime(msg.createdAt)}
           </span>
         </div>
-        <div className="max-w-[85%] rounded-[24px] border border-[#f5cdb0] bg-[#fef0e4] px-6 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-          <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-[--color-dark-warm]">{msg.text}</div>
+        <div className="max-w-[60%] rounded-2xl border border-cream bg-white px-5 py-2.5 shadow-sm">
+          <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">{msg.text}</div>
         </div>
         {/* Read receipt — left-aligned for others' messages */}
         <ReadReceiptLabel
           channelId={channelId}
           messageId={msg.id}
           senderId={msg.senderId}
-          readBy={msg.readBy ?? []}
+          readBy={latestReadBy ?? []}
           isMine={false}
           currentUserId={currentUserId}
         />
