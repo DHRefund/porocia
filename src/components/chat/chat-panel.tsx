@@ -36,7 +36,7 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
 
   return (
     <div 
-      className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden h-full relative"
+      className="flex w-full flex-1 flex-col overflow-hidden h-full relative"
       onClick={markAsRead}
     >
       {/* Messages */}
