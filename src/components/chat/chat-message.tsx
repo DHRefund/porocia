@@ -1,5 +1,6 @@
 import { ChatMessage } from "@/lib/firebase/chat";
 import { ReadReceiptLabel } from "@/components/chat/read-receipt-label";
+import { UserProfile } from "@/lib/firebase/chat";
 
 const formatTime = (timestamp: any) => {
   if (!timestamp?.toDate) return "";
@@ -35,9 +36,15 @@ interface ChatBubbleProps {
   currentUserId?: string;
   /** Filtered list of UIDs whose latest read message is this one */
   latestReadBy?: string[];
+  /** Profile of the currently logged-in user to show latest avatar for own messages */
+  currentUserProfile?: UserProfile | null;
 }
 
-export function ChatBubble({ msg, isMine, channelId, currentUserId, latestReadBy }: ChatBubbleProps) {
+export function ChatBubble({ msg, isMine, channelId, currentUserId, latestReadBy, currentUserProfile }: ChatBubbleProps) {
+  const displayName = currentUserProfile?.displayName || msg.senderName;
+  const avatarUrl = currentUserProfile?.photoURL || msg.senderPhotoURL;
+  const initials = getInitials(formatSenderName(displayName));
+
   if (isMine) {
     return (
       <div className="flex flex-col items-end gap-1">
@@ -69,13 +76,17 @@ export function ChatBubble({ msg, isMine, channelId, currentUserId, latestReadBy
 
   return (
     <div className="flex flex-row items-start gap-4">
-      <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
-        {getInitials(formatSenderName(msg.senderName))}
+      <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={msg.senderName} className="h-full w-full object-cover" />
+        ) : (
+          initials
+        )}
       </div>
       <div className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2 ml-1">
           <span className="text-[13px] font-semibold text-near-black">
-            {formatSenderName(msg.senderName)}
+            {formatSenderName(displayName)}
           </span>
           <span className="text-[11px] font-medium tracking-wide text-stone">
             {formatTime(msg.createdAt)}

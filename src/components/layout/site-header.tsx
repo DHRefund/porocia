@@ -101,10 +101,14 @@ export function SiteHeader() {
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setOpen((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2a2a27] text-xs font-bold text-ivory transition-opacity hover:opacity-80 focus:outline-none"
+                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-[#2a2a27] text-xs font-bold text-ivory transition-opacity hover:opacity-80 focus:outline-none"
                 title={displayName}
               >
-                {getInitials(displayName)}
+                {profile?.photoURL ? (
+                  <img src={profile.photoURL} alt={displayName} className="h-full w-full object-cover" />
+                ) : (
+                  getInitials(displayName)
+                )}
               </button>
 
               {/* Dropdown panel — canh giữa theo avatar, nền đặc không trong suốt */}

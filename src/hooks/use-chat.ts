@@ -8,12 +8,14 @@ import {
   listenLatestMessages,
   markChannelAsRead,
   sendMessage,
+  getUserProfiles,
 } from "@/lib/firebase/chat";
 import { User } from "firebase/auth";
 import { UserProfile } from "@/components/auth-provider";
 
 export function useChat(channelId: string, user: User | null, profile: UserProfile | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [senderProfiles, setSenderProfiles] = useState<Record<string, UserProfile>>({});
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -105,6 +107,7 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
           user.displayName ||
           user.email?.split("@")[0] ||
           "Unknown User",
+        senderPhotoURL: profile?.photoURL || user.photoURL || "",
       });
       setInput("");
     } finally {
@@ -142,6 +145,31 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     return () => window.removeEventListener("focus", onFocus);
   }, [user, channelId, messages]);
 
+  // Fetch profiles for all senders in the message list
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const uids = Array.from(new Set(messages.map((m) => m.senderId)));
+    const missingUids = uids.filter((uid) => !senderProfiles[uid]);
+    
+    if (missingUids.length === 0) return;
+
+    const fetchProfiles = async () => {
+      try {
+        const profiles = await getUserProfiles(missingUids);
+        setSenderProfiles((prev) => {
+          const newMap = { ...prev };
+          profiles.forEach((p) => {
+            newMap[p.uid] = p;
+          });
+          return newMap;
+        });
+      } catch (error) {
+        console.error("Failed to fetch sender profiles:", error);
+      }
+    };
+    fetchProfiles();
+  }, [messages, senderProfiles]);
+
   return {
     messages,
     input,
@@ -154,5 +182,6 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     handleSend,
     markAsRead,
     bottomRef,
+    senderProfiles,
   };
 }

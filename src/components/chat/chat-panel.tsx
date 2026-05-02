@@ -24,6 +24,7 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
     handleSend,
     markAsRead,
     bottomRef,
+    senderProfiles,
   } = useChat(channelId, user, profile);
 
   if (authLoading || initializing) {
@@ -79,6 +80,7 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
             let lastDateString: string | null = null;
 
             return messages.flatMap((msg) => {
+              const isMine = msg.senderId === user?.uid;
               const latestReadBy = (msg.readBy || []).filter(
                 (uid) => latestReads[uid] === msg.id
               );
@@ -110,6 +112,7 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
                   channelId={channelId}
                   currentUserId={user?.uid}
                   latestReadBy={latestReadBy}
+                  currentUserProfile={isMine ? (profile as any) : senderProfiles[msg.senderId]}
                 />
               );
 

@@ -26,6 +26,7 @@ export type ChatMessage = {
   senderId: string;
   senderEmail: string;
   senderName: string;
+  senderPhotoURL?: string;
   type: "text";
   createdAt?: any;
   updatedAt?: any | null;
@@ -94,8 +95,9 @@ export async function sendMessage(params: {
   senderId: string;
   senderEmail: string;
   senderName: string;
+  senderPhotoURL?: string;
 }) {
-  const { channelId, text, senderId, senderEmail, senderName } = params;
+  const { channelId, text, senderId, senderEmail, senderName, senderPhotoURL } = params;
   const trimmed = text.trim();
   if (!trimmed) return;
 
@@ -112,6 +114,7 @@ export async function sendMessage(params: {
     senderId,
     senderEmail,
     senderName,
+    senderPhotoURL: senderPhotoURL || "",
     type: "text",
     createdAt: serverTimestamp(),
     updatedAt: null,
