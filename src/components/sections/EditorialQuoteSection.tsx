@@ -1,6 +1,6 @@
 export default function EditorialQuoteSection() {
   return (
-    <section className="py-24 border-y border-border bg-card">
+    <section className="py-24 border-y border-border bg-background">
       <div className="max-w-4xl mx-auto px-6 md:px-12">
         <div
           className="py-4 pl-10 md:pl-12"

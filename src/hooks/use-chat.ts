@@ -24,7 +24,10 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const topRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const initializedRef = useRef(false);
+  const lastScrollHeightRef = useRef<number>(0);
 
   useEffect(() => {
     if (!user || !channelId) {
@@ -33,6 +36,8 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     }
 
     let unsubscribe: (() => void) | undefined;
+    initializedRef.current = false;
+    setMessages([]);
 
     const init = async () => {
       await ensureChannel(channelId, channelId, user.uid);
@@ -42,9 +47,15 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
       setLastVisible(firstPage.lastVisible);
       setHasMore(firstPage.messages.length >= 20);
       setInitializing(false);
-      initializedRef.current = true;
+      
+      // Đánh dấu đã init xong để chuẩn bị cuộn
+      setTimeout(() => {
+        initializedRef.current = true;
+        // Cuộn xuống dưới cùng ngay lập tức khi mới vào phòng
+        bottomRef.current?.scrollIntoView({ behavior: "instant" as any });
+      }, 0);
 
-      // Mark channel as read when user opens it
+      // Mark channel as read khi mở phòng
       await markChannelAsRead(channelId, user.uid);
 
       unsubscribe = listenLatestMessages(channelId, (latestMessages) => {
@@ -55,7 +66,17 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
               : [];
           const merged = [...olderPart, ...latestMessages];
           const uniqueMap = new Map(merged.map((msg) => [msg.id, msg]));
-          return Array.from(uniqueMap.values());
+          const newMessages = Array.from(uniqueMap.values());
+          
+          // Nếu có tin nhắn mới từ chính mình, cuộn xuống
+          const lastMsg = latestMessages[latestMessages.length - 1];
+          if (lastMsg && lastMsg.senderId === user.uid) {
+             setTimeout(() => {
+                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+             }, 50);
+          }
+          
+          return newMessages;
         });
       });
     };
@@ -67,10 +88,38 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     };
   }, [user, channelId]);
 
+  // Logic giữ vị trí cuộn khi Load More
   useEffect(() => {
-    if (!initializedRef.current) return;
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (loadingMore && scrollContainerRef.current) {
+      lastScrollHeightRef.current = scrollContainerRef.current.scrollHeight;
+    }
+  }, [loadingMore]);
+
+  useEffect(() => {
+    if (!loadingMore && lastScrollHeightRef.current > 0 && scrollContainerRef.current) {
+      const newHeight = scrollContainerRef.current.scrollHeight;
+      const heightDifference = newHeight - lastScrollHeightRef.current;
+      scrollContainerRef.current.scrollTop = heightDifference;
+      lastScrollHeightRef.current = 0;
+    }
+  }, [messages, loadingMore]);
+
+  // Logic Infinite Scroll
+  useEffect(() => {
+    if (!topRef.current || !hasMore || loadingMore || initializing) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          handleLoadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(topRef.current);
+    return () => observer.disconnect();
+  }, [topRef.current, hasMore, loadingMore, initializing]);
 
   const handleLoadMore = async () => {
     if (!lastVisible || loadingMore) return;
@@ -87,6 +136,8 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
 
       setLastVisible(result.lastVisible);
       setHasMore(result.hasMore);
+    } catch (error) {
+      console.error("Load more error:", error);
     } finally {
       setLoadingMore(false);
     }
@@ -110,6 +161,10 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
         senderPhotoURL: profile?.photoURL || user.photoURL || "",
       });
       setInput("");
+      // Cuộn xuống mượt sau khi gửi tin nhắn
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     } finally {
       setSending(false);
     }
@@ -145,7 +200,7 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     return () => window.removeEventListener("focus", onFocus);
   }, [user, channelId, messages]);
 
-  // Fetch profiles for all senders in the message list
+  // Fetch profiles cho các sender
   useEffect(() => {
     if (messages.length === 0) return;
     const uids = Array.from(new Set(messages.map((m) => m.senderId)));
@@ -182,6 +237,8 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     handleSend,
     markAsRead,
     bottomRef,
+    topRef,
+    scrollContainerRef,
     senderProfiles,
   };
 }

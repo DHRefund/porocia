@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useRef } from "react";
+
 import { useAuth } from "@/components/auth-provider";
 import { useChat } from "@/hooks/use-chat";
 import { ChatBubble } from "@/components/chat/chat-message";
@@ -24,36 +26,75 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
     handleSend,
     markAsRead,
     bottomRef,
+    topRef,
+    scrollContainerRef,
     senderProfiles,
   } = useChat(channelId, user, profile);
 
+  const overscrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const currentOffsetRef = useRef(0);
+
+  // Logic Elastic Overscroll (Direct DOM Manipulation cho 60fps)
+  const handleWheel = (e: React.WheelEvent) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const isAtTop = container.scrollTop <= 0;
+    const isAtBottom = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) < 2;
+
+    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+      // Tắt transition khi đang kéo để bám sát tay
+      container.style.transition = "none";
+      
+      const resistance = 0.4;
+      currentOffsetRef.current = Math.max(-60, Math.min(60, currentOffsetRef.current - e.deltaY * resistance));
+      
+      // Cập nhật trực tiếp vào CSS Variable
+      container.style.setProperty("--overscroll-y", `${currentOffsetRef.current}px`);
+
+      if (overscrollTimeoutRef.current) clearTimeout(overscrollTimeoutRef.current);
+      overscrollTimeoutRef.current = setTimeout(() => {
+        // Bật lại transition khi nảy về
+        container.style.transition = "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+        currentOffsetRef.current = 0;
+        container.style.setProperty("--overscroll-y", "0px");
+      }, 50);
+    } else if (currentOffsetRef.current !== 0) {
+      currentOffsetRef.current = 0;
+      container.style.setProperty("--overscroll-y", "0px");
+    }
+  };
+
+  // Nếu đang initializing hoặc chưa có auth, chúng ta trả về null 
+  // để Suspense ở Page tiếp tục hiển thị Skeleton cho đến khi sẵn sàng.
   if (authLoading || initializing) {
-    return (
-      <div className="flex h-full flex-1 items-center justify-center text-stone">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-warm border-t-terracotta" />
-      </div>
-    );
+    return null;
   }
 
   return (
     <div 
       className="flex w-full flex-1 flex-col overflow-hidden h-full relative"
       onClick={markAsRead}
+      onWheel={handleWheel}
     >
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mb-8 flex justify-center">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-6 py-6"
+        style={{ 
+          transform: `translateY(var(--overscroll-y, 0px))`,
+          overscrollBehavior: "contain"
+        }}
+      >
+        <div className="mb-8 flex justify-center" ref={topRef}>
           {hasMore ? (
-            <button
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              className="rounded-full border border-cream bg-ivory px-6 py-2 text-xs font-semibold uppercase tracking-widest text-olive transition-colors hover:bg-cream disabled:opacity-50"
-            >
-              {loadingMore ? "Loading..." : "Load older"}
-            </button>
+            <div className="flex items-center gap-2 text-stone">
+               <div className="h-4 w-4 animate-spin rounded-full border-2 border-warm border-t-terracotta" />
+               <span className="text-xs font-semibold uppercase tracking-widest">過去のメッセージを読み込み中...</span>
+            </div>
           ) : (
             <span className="text-xs font-semibold uppercase tracking-widest text-stone">
-              Beginning of channel
+              これ以上、過去のメッセージはありません
             </span>
           )}
         </div>

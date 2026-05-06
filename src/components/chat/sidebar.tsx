@@ -7,9 +7,9 @@ import { useAuth } from "@/components/auth-provider";
 import { Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+export function Sidebar({ initialChannels = [] }: { initialChannels?: any[] }) {
   const pathname = usePathname();
-  const { channels, loading } = useChannels();
+  const { channels, loading } = useChannels(initialChannels);
   const { user } = useAuth();
 
   return (

@@ -1,33 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { getAnnouncements, Announcement } from "@/lib/firebase/announcements";
+import { getAnnouncementsServer } from "@/lib/firebase/announcements-server";
 import Link from "next/link";
 import { ArrowUpRight, Megaphone } from "lucide-react";
 
-export default function AnnouncementsBento() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function AnnouncementsBento() {
+  "use cache";
+  let announcements = [];
+  try {
+    announcements = await getAnnouncementsServer();
+  } catch (error) {
+    console.error("Error fetching bento announcements:", error);
+    return null;
+  }
 
-  useEffect(() => {
-    const fetchTopAnnouncements = async () => {
-      try {
-        const all = await getAnnouncements();
-        setAnnouncements(all.slice(0, 3));
-      } catch (error) {
-        console.error("Error fetching bento announcements:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTopAnnouncements();
-  }, []);
-
-  if (loading) return null;
   if (announcements.length === 0) return null;
 
   return (
-    <section className="py-24 bg-ivory">
+    <section className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         {/* Section Header */}
         <div className="flex items-end justify-between mb-12">
