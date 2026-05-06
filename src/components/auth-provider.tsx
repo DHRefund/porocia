@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let unsubscribeSnapshot: (() => void) | null = null;
 
-    const unsubscribeAuth = listenAuthState((firebaseUser) => {
+    const unsubscribeAuth = listenAuthState(async (firebaseUser) => {
       // Hủy listener Firestore cũ nếu user đổi
       if (unsubscribeSnapshot) {
         unsubscribeSnapshot();
@@ -48,8 +48,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(firebaseUser);
 
       if (firebaseUser) {
+        // ĐỒNG BỘ SESSION: Nếu có user ở client, đảm bảo server cũng có cookie
+        // Điều này giúp fix lỗi "Header hiện user nhưng vào chat bị redirect về login"
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+          });
+        } catch (err) {
+          console.error("Failed to sync auth session to server:", err);
+        }
+
         // Dùng onSnapshot để profile tự cập nhật realtime
-        // (VD: user đổi tên ở Profile page → Header tự cập nhật ngay)
         unsubscribeSnapshot = onSnapshot(
           doc(db, "users", firebaseUser.uid),
           (snap) => {
@@ -61,7 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
           },
           () => {
-            // Lỗi đọc Firestore → vẫn cho tiếp tục, không crash app
             setLoading(false);
           }
         );

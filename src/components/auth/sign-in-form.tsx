@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import * as z from "zod"
+import { useAuth } from "@/components/auth-provider";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -62,9 +63,18 @@ const FIREBASE_ERRORS: Record<string, string> = {
 
 export function SignInForm() {
   const router = useRouter()
+  const { user, loading } = useAuth()
 
   const [serverError, setServerError] = React.useState("")
   const [mode, setMode] = React.useState<"sign-in" | "sign-up">("sign-in")
+
+  // Nếu user đã login ở client, tự động redirect luôn
+  React.useEffect(() => {
+    if (!loading && user) {
+      const params = new URLSearchParams(window.location.search)
+      router.push(params.get("redirect") || "/chat")
+    }
+  }, [user, loading, router])
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),

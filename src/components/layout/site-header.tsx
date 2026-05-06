@@ -15,6 +15,7 @@ const navItems = [
   { label: "Knowledge", href: "/knowledge" },
   { label: "Announcements", href: "/announcements" },
   { label: "Profile", href: "/profile" },
+  { label: "Dashboard", href: "/dashboard" },
 ];
 
 const getInitials = (name: string) => {
