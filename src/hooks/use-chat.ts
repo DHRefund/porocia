@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import {
-  ChatMessage,
   ensureChannel,
   getLatestMessages,
   getOlderMessages,
@@ -9,9 +8,32 @@ import {
   markChannelAsRead,
   sendMessage,
   getUserProfiles,
+  toggleMessageReaction,
 } from "@/lib/firebase/chat";
 import { User } from "firebase/auth";
 import { UserProfile } from "@/components/auth-provider";
+
+export type ChatMessage = {
+  id: string;
+  text: string;
+  senderId: string;
+  senderEmail: string;
+  senderName: string;
+  senderPhotoURL?: string;
+  type: "text";
+  createdAt?: any;
+  updatedAt?: any | null;
+  readBy?: string[];
+  readAt?: Record<string, any>;
+  // Thêm trường replyTo
+  replyTo?: {
+    messageId: string;
+    senderName: string;
+    text: string;
+  };
+  // Thêm trường reactions: emoji -> [uids]
+  reactions?: Record<string, string[]>;
+};
 
 export function useChat(channelId: string, user: User | null, profile: UserProfile | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -22,6 +44,7 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
   const [initializing, setInitializing] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
@@ -159,14 +182,41 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
           user.email?.split("@")[0] ||
           "Unknown User",
         senderPhotoURL: profile?.photoURL || user.photoURL || "",
+        // Đính kèm thông tin reply nếu có
+        replyTo: replyingTo ? {
+          messageId: replyingTo.id,
+          senderName: replyingTo.senderName,
+          text: replyingTo.text,
+        } : undefined,
       });
       setInput("");
+      setReplyingTo(null); // Reset trạng thái reply sau khi gửi
+      
       // Cuộn xuống mượt sau khi gửi tin nhắn
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleToggleReaction = async (messageId: string, emoji: string) => {
+    if (!user || !channelId) return;
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg) return;
+
+    const isRemoving = msg.reactions?.[emoji]?.includes(user.uid) || false;
+    try {
+      await toggleMessageReaction({
+        channelId,
+        messageId,
+        uid: user.uid,
+        emoji,
+        isRemoving,
+      });
+    } catch (error) {
+      console.error("Failed to toggle reaction:", error);
     }
   };
 
@@ -235,10 +285,13 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     hasMore,
     handleLoadMore,
     handleSend,
+    handleToggleReaction,
     markAsRead,
     bottomRef,
     topRef,
     scrollContainerRef,
     senderProfiles,
+    replyingTo,
+    setReplyingTo,
   };
 }

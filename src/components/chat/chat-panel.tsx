@@ -29,6 +29,9 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
     topRef,
     scrollContainerRef,
     senderProfiles,
+    replyingTo,
+    setReplyingTo,
+    handleToggleReaction,
   } = useChat(channelId, user, profile);
 
   const overscrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -154,6 +157,8 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
                   currentUserId={user?.uid}
                   latestReadBy={latestReadBy}
                   currentUserProfile={isMine ? (profile as any) : senderProfiles[msg.senderId]}
+                  onReply={setReplyingTo}
+                  onToggleReaction={handleToggleReaction}
                 />
               );
 
@@ -165,12 +170,14 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="shrink-0 bg-background/95 backdrop-blur-sm border-t border-cream p-4">
+      <div className="shrink-0 bg-background/95 backdrop-blur-sm border-t border-cream">
         <ChatInput 
           input={input} 
           setInput={setInput} 
           handleSend={handleSend} 
-          sending={sending} 
+          sending={sending}
+          replyingTo={replyingTo}
+          setReplyingTo={setReplyingTo}
         />
       </div>
     </div>

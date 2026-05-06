@@ -1,6 +1,7 @@
 import {
   addDoc,
   arrayUnion,
+  arrayRemove,
   collection,
   doc,
   getDoc,
@@ -34,6 +35,14 @@ export type ChatMessage = {
   readBy?: string[];
   /** uid → Firestore Timestamp when they read */
   readAt?: Record<string, any>;
+  // Thêm trường replyTo
+  replyTo?: {
+    messageId: string;
+    senderName: string;
+    text: string;
+  };
+  // Thêm trường reactions: emoji -> [uids]
+  reactions?: Record<string, string[]>;
 };
 
 export type UserProfile = {
@@ -96,6 +105,11 @@ export async function sendMessage(params: {
   senderEmail: string;
   senderName: string;
   senderPhotoURL?: string;
+  replyTo?: {
+    messageId: string;
+    senderName: string;
+    text: string;
+  };
 }) {
   const { channelId, text, senderId, senderEmail, senderName, senderPhotoURL } = params;
   const trimmed = text.trim();
@@ -120,6 +134,7 @@ export async function sendMessage(params: {
     updatedAt: null,
     readBy: [senderId],
     readAt: { [senderId]: serverTimestamp() },
+    replyTo: params.replyTo || null,
   });
 
   // Register sender as a channel member (idempotent)
@@ -272,4 +287,32 @@ export async function getUserProfiles(uids: string[]): Promise<UserProfile[]> {
     })
   );
   return results.filter((p): p is UserProfile => p !== null);
+}
+
+/**
+ * Toggle a reaction on a message.
+ */
+export async function toggleMessageReaction(params: {
+  channelId: string;
+  messageId: string;
+  uid: string;
+  emoji: string;
+  isRemoving: boolean;
+}) {
+  const { channelId, messageId, uid, emoji, isRemoving } = params;
+  const msgRef = doc(db, "channels", channelId, "messages", messageId);
+
+  if (isRemoving) {
+    await setDoc(msgRef, {
+      reactions: {
+        [emoji]: arrayRemove(uid)
+      }
+    }, { merge: true });
+  } else {
+    await setDoc(msgRef, {
+      reactions: {
+        [emoji]: arrayUnion(uid)
+      }
+    }, { merge: true });
+  }
 }
