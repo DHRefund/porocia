@@ -8,6 +8,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./client";
+import { createSessionCookieAction, removeSessionCookieAction } from "@/lib/actions/auth";
 
 /**
  * Tự động đồng bộ / khởi tạo dữ liệu của người dùng vào collection `users`
@@ -40,13 +41,9 @@ export async function registerWithEmail(email: string, password: string) {
   const credential = await createUserWithEmailAndPassword(auth, email, password);
   await syncUserToFirestore(credential.user);
   
-  // Tạo server cookie session
+  // Tạo server cookie session via Server Action
   const idToken = await credential.user.getIdToken();
-  await fetch("/api/auth/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken })
-  });
+  await createSessionCookieAction(idToken);
 
   return credential;
 }
@@ -55,19 +52,15 @@ export async function loginWithEmail(email: string, password: string) {
   const credential = await signInWithEmailAndPassword(auth, email, password);
   await syncUserToFirestore(credential.user);
 
-  // Tạo server cookie session
+  // Tạo server cookie session via Server Action
   const idToken = await credential.user.getIdToken();
-  await fetch("/api/auth/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken })
-  });
+  await createSessionCookieAction(idToken);
 
   return credential;
 }
 
 export async function logout() {
-  await fetch("/api/auth/session", { method: "DELETE" });
+  await removeSessionCookieAction();
   return signOut(auth);
 }
 
