@@ -15,7 +15,7 @@ export default async function AnnouncementsBento() {
   if (announcements.length === 0) return null;
 
   return (
-    <section className="py-24 bg-background">
+    <section id="announcements-section" className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         {/* Section Header */}
         <div className="flex items-end justify-between mb-12">
@@ -40,7 +40,7 @@ export default async function AnnouncementsBento() {
           {/* Main Large Item */}
           {announcements[0] && (
             <Link 
-              href="/announcements" 
+              href={`/announcements#announcement-${announcements[0].id}`}
               className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-[32px] bg-cream"
             >
               <img 
@@ -59,7 +59,7 @@ export default async function AnnouncementsBento() {
           {/* Smaller Item 1 */}
           {announcements[1] && (
             <Link 
-              href="/announcements" 
+              href={`/announcements#announcement-${announcements[1].id}`}
               className="relative group overflow-hidden rounded-[32px] bg-cream"
             >
               <img 
@@ -78,7 +78,7 @@ export default async function AnnouncementsBento() {
           {/* Smaller Item 2 */}
           {announcements[2] && (
             <Link 
-              href="/announcements" 
+              href={`/announcements#announcement-${announcements[2].id}`}
               className="relative group overflow-hidden rounded-[32px] bg-cream"
             >
               <img 

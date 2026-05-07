@@ -34,6 +34,11 @@ export default function NewAnnouncementPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Kích thước ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+        e.target.value = ""; // Reset input
+        return;
+      }
       setImage(file);
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result as string);
@@ -51,6 +56,12 @@ export default function NewAnnouncementPage() {
       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       { method: "POST", body: formData }
     );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || "Lỗi khi tải ảnh lên Cloudinary");
+    }
+    
     const data = await response.json();
     return data.secure_url;
   };
@@ -78,6 +89,14 @@ export default function NewAnnouncementPage() {
         authorId: user.uid,
         authorName: profile?.displayName || user.email?.split("@")[0] || "Admin",
       });
+
+      // Clear form
+      setTitle("");
+      setContent("");
+      setType("info");
+      setIsPinned(false);
+      setImage(null);
+      setImagePreview(null);
 
       router.push("/dashboard/announcements");
     } catch (error) {

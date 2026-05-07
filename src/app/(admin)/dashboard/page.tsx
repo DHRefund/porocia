@@ -1,35 +1,40 @@
-"use client";
-
-import { useAuth } from "@/components/auth-provider";
 import { 
   Megaphone, 
   Calendar, 
   ArrowRight,
-  TrendingUp,
   Users,
   Activity
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { collection, getCountFromServer } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { adminAuth, adminDb } from "@/lib/firebase/server";
 
-export default function AdminDashboardPage() {
-  const { profile } = useAuth();
-  const [userCount, setUserCount] = useState<number | null>(null);
+export default async function AdminDashboardPage() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("__session")?.value;
 
-  useEffect(() => {
-    const fetchUserCount = async () => {
-      try {
-        const coll = collection(db, "users");
-        const snapshot = await getCountFromServer(coll);
-        setUserCount(snapshot.data().count);
-      } catch (error) {
-        console.error("Error fetching user count:", error);
-      }
-    };
-    fetchUserCount();
-  }, []);
+  if (!sessionCookie) {
+    redirect("/login");
+  }
+
+  let decodedClaims;
+  try {
+    decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+  } catch (error) {
+    redirect("/login");
+  }
+
+  const userDoc = await adminDb.collection("users").doc(decodedClaims.uid).get();
+  const profile = userDoc.data();
+
+  let userCount = -1;
+  try {
+    const snapshot = await adminDb.collection("users").count().get();
+    userCount = snapshot.data().count;
+  } catch (error) {
+    console.error("Error fetching user count from server:", error);
+  }
 
   // Role check logic (commented out for testing as requested)
   /*
@@ -57,7 +62,7 @@ export default function AdminDashboardPage() {
         {[
           { label: "Thông báo mới", value: "12", icon: Megaphone, color: "bg-terracotta" },
           { label: "Sự kiện sắp tới", value: "05", icon: Calendar, color: "bg-olive" },
-          { label: "Tổng số User", value: userCount !== null ? userCount.toString() : "...", icon: Users, color: "bg-stone" },
+          { label: "Tổng số User", value: userCount === -1 ? "Lỗi hệ thống" : userCount.toString(), icon: Users, color: "bg-stone" },
         ].map((stat, i) => (
           <div key={i} className="bg-white border border-cream p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
@@ -68,10 +73,6 @@ export default function AdminDashboardPage() {
               <div className={`${stat.color} p-3 rounded-xl`}>
                 <stat.icon className="w-5 h-5 text-ivory" />
               </div>
-            </div>
-            <div className="mt-4 flex items-center gap-2 text-xs font-medium text-emerald-600">
-              <TrendingUp className="w-3 h-3" />
-              <span>+12% so với tuần trước</span>
             </div>
           </div>
         ))}
@@ -115,27 +116,6 @@ export default function AdminDashboardPage() {
             </div>
             <ArrowRight className="w-5 h-5 text-stone group-hover:translate-x-1 transition-transform" />
           </Link>
-        </div>
-      </div>
-
-      {/* Recent Activity (Placeholder) */}
-      <div className="bg-white border border-cream rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-cream bg-ivory/30 flex items-center justify-between">
-          <h3 className="font-bold text-near-black">Hoạt động gần đây</h3>
-          <button className="text-xs font-bold text-terracotta uppercase tracking-wider hover:underline">Xem tất cả</button>
-        </div>
-        <div className="divide-y divide-cream">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="px-6 py-4 flex items-center gap-4 hover:bg-cream/10 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-cream flex items-center justify-center font-bold text-stone">
-                {item}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-near-black">Hệ thống đã tự động sao lưu dữ liệu thành công.</p>
-                <p className="text-xs text-stone mt-0.5">2 giờ trước</p>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

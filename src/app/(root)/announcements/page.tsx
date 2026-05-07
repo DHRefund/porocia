@@ -37,6 +37,18 @@ export default function PublicAnnouncementsPage() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!loading && window.location.hash) {
+      setTimeout(() => {
+        const id = window.location.hash.substring(1);
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
+  }, [loading, announcements]);
+
   const cn = (...classes: any[]) => classes.filter(Boolean).join(" ");
 
   if (loading) {
@@ -73,19 +85,20 @@ export default function PublicAnnouncementsPage() {
         ) : (
           announcements.map((a) => (
             <article 
+              id={`announcement-${a.id}`}
               key={a.id} 
               className={cn(
-                "group bg-white border border-cream rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl hover:shadow-terracotta/5 transition-all duration-500",
+                "group bg-white border border-cream rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl hover:shadow-terracotta/5 transition-all duration-500 scroll-mt-24",
                 a.isPinned && "ring-1 ring-terracotta/30 shadow-lg shadow-terracotta/5"
               )}
             >
               {/* Image Header - Full Width Top */}
               {a.imageURL && (
-                <div className="aspect-video w-full overflow-hidden relative">
+                <div className="w-full relative overflow-hidden bg-stone/5 border-b border-cream flex items-center justify-center">
                   <img 
                     src={a.imageURL} 
                     alt={a.title} 
-                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700" 
+                    className="w-full h-auto max-h-[600px] object-contain group-hover:scale-[1.02] transition-transform duration-700" 
                   />
                   {a.isPinned && (
                     <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1.5 bg-terracotta text-ivory rounded-full text-[10px] font-bold uppercase tracking-wider z-10 shadow-xl shadow-terracotta/20">
