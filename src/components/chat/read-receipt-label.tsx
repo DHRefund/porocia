@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ReadReceiptModal } from "@/components/chat/read-receipt-modal";
+import { createPortal } from "react-dom";
 
 interface ReadReceiptLabelProps {
   channelId: string;
@@ -58,7 +59,7 @@ export function ReadReceiptLabel({
         </span>
       </button> 
 
-      {modalOpen && (
+      {modalOpen && typeof document !== "undefined" && createPortal(
         <ReadReceiptModal
           channelId={channelId}
           messageId={messageId}
@@ -66,7 +67,8 @@ export function ReadReceiptLabel({
           senderId={senderId}
           currentUserId={currentUserId}
           onClose={() => setModalOpen(false)}
-        />
+        />,
+        document.body
       )}
     </>
   );

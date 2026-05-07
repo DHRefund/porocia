@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getUserProfiles, UserProfile } from "@/lib/firebase/chat";
 import { cn } from "@/lib/utils";
-import { createPortal } from 'react-dom';
 
 interface ReadReceiptModalProps {
   channelId: string;
@@ -89,14 +88,14 @@ export function ReadReceiptModal({
 
   if (!mounted) return null;
 
-  const modalContent = (
+  return (
     <div
       ref={overlayRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-[4px] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[4px] animate-in fade-in duration-200"
     >
       <div 
-        className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-cream bg-white shadow-[0_20px_60px_rgba(0,0,0,0.2)] animate-in zoom-in-95 duration-200"
+        className="relative z-60 w-full max-w-sm overflow-hidden rounded-2xl border border-cream bg-white shadow-[0_20px_60px_rgba(0,0,0,0.2)] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -174,6 +173,4 @@ export function ReadReceiptModal({
       </div>
     </div>
   );
-
-  return createPortal(modalContent, document.body);
 }

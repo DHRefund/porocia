@@ -2,7 +2,7 @@ import { ChatMessage } from "@/lib/firebase/chat";
 import { ReadReceiptLabel } from "@/components/chat/read-receipt-label";
 import { UserProfile } from "@/lib/firebase/chat";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const formatTime = (timestamp: any) => {
   if (!timestamp?.toDate) return "";
@@ -55,38 +55,42 @@ export function ChatBubble({
   onToggleReaction
 }: ChatBubbleProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const displayName = currentUserProfile?.displayName || msg.senderName;
   const avatarUrl = currentUserProfile?.photoURL || msg.senderPhotoURL;
   const initials = getInitials(formatSenderName(displayName));
 
+  useEffect(() => {
+    if (!showEmojiPicker) return;
+    const handler = (e: MouseEvent) => {
+      if (!pickerRef.current?.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showEmojiPicker]);
+
   const ReplyPreview = () => {
     if (!msg.replyTo) return null;
     return (
-      <div className={cn(
-        "mb-4 flex flex-col gap-2.5 rounded-xl px-4 py-3 transition-all hover:bg-black/5 cursor-pointer border-l-[3px]",
-        isMine ? "bg-black/[0.04] border-terracotta/40" : "bg-black/[0.04] border-stone/30"
-      )}>
-        {/* Header: Avatar + Name + Time */}
-        <div className="flex items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-5 w-5 rounded-full bg-stone/20 overflow-hidden shrink-0 border border-white/50">
-              <div className="flex h-full w-full items-center justify-center text-[9px] font-bold text-stone uppercase">
-                {msg.replyTo.senderName.substring(0, 1)}
-              </div>
-            </div>
-            <p className="truncate text-[12.5px] font-bold tracking-tight text-near-black">
-              {msg.replyTo.senderName}
-            </p>
-          </div>
-          <span className="shrink-0 text-[10.5px] font-medium text-stone/50">
-            {formatTime(msg.createdAt)}
-          </span>
+      <div 
+        className={cn(
+          "mb-2.5 -mx-5 -mt-3 flex items-start gap-2.5 border-b px-5 pt-3 pb-2.5 cursor-pointer transition-colors",
+          isMine ? "border-[#e6d5c3] hover:bg-black/5" : "border-[#e8e2d9] hover:bg-black/5"
+        )}
+      >
+        <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone/20 text-[9px] font-bold uppercase text-stone">
+          {getInitials(formatSenderName(msg.replyTo.senderName))}
         </div>
-        
-        {/* Content Preview */}
-        <p className="line-clamp-2 text-[13px] leading-relaxed text-stone/70 italic pl-1">
-          {msg.replyTo.text}
-        </p>
+        <div className="flex flex-col min-w-0">
+          <p className="truncate text-[12px] font-bold text-near-black leading-tight mb-0.5">
+            {msg.replyTo.senderName}
+          </p>
+          <p className="truncate text-[13px] text-stone/80 leading-snug">
+            {msg.replyTo.text}
+          </p>
+        </div>
       </div>
     );
   };
@@ -101,7 +105,7 @@ export function ChatBubble({
 
     return (
       <div className={cn(
-        "flex flex-wrap gap-1 mt-1",
+        "flex flex-wrap gap-1 mt-1 relative z-10",
         isMine ? "justify-end" : "justify-start"
       )}>
         {entries.map(([emoji, uids]) => {
@@ -130,10 +134,12 @@ export function ChatBubble({
   };
 
   const ReactionPicker = () => (
-    <div className={cn(
-      "absolute bottom-full mb-3 z-[100] flex items-center gap-1 rounded-full bg-white p-1.5 shadow-2xl border border-cream animate-in fade-in zoom-in origin-bottom duration-200 whitespace-nowrap",
-      isMine ? "right-0" : "left-0"
-    )}>
+    <div 
+      ref={pickerRef}
+      className={cn(
+        "absolute bottom-full mb-3 z-30 flex items-center gap-1 rounded-full bg-white p-1.5 shadow-2xl border border-cream animate-in fade-in zoom-in origin-bottom duration-200 whitespace-nowrap",
+        isMine ? "right-0" : "left-0"
+      )}>
       {EMOJIS.map(emoji => (
         <button
           key={emoji}
@@ -152,8 +158,9 @@ export function ChatBubble({
 
   const ActionButtons = () => (
     <div className={cn(
-      "opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 shrink-0 relative",
-      isMine ? "order-first" : ""
+      "absolute z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5",
+      isMine ? "right-full mr-2" : "left-full ml-2",
+      "top-1/2 -translate-y-1/2"
     )}>
       {showEmojiPicker && <ReactionPicker />}
       
@@ -179,7 +186,7 @@ export function ChatBubble({
 
   if (isMine) {
     return (
-      <div className={cn("group flex flex-col items-end gap-1 relative", showEmojiPicker && "z-30")}>
+      <div className="group flex flex-col items-end gap-1 relative">
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-2 mr-1">
             <span className="text-[11px] font-medium tracking-wide text-stone">
@@ -187,9 +194,9 @@ export function ChatBubble({
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 max-w-[85%]">
+        <div className="relative max-w-[85%] w-fit">
           <ActionButtons />
-          <div className="relative w-full rounded-2xl bg-[#fdf2e9] border border-[#f5e6d3] px-5 py-3 shadow-sm">
+          <div className="relative z-10 w-full rounded-2xl bg-[#fdf2e9] border border-[#f5e6d3] px-5 py-3 shadow-sm overflow-hidden">
             <ReplyPreview />
             <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">
                {msg.text}
@@ -212,7 +219,7 @@ export function ChatBubble({
   }
 
   return (
-    <div className={cn("group flex flex-row items-start gap-4 relative", showEmojiPicker && "z-30")}>
+    <div className="group flex flex-row items-start gap-4 relative">
       <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
         {avatarUrl ? (
           <img src={avatarUrl} alt={msg.senderName} className="h-full w-full object-cover" />
@@ -220,7 +227,7 @@ export function ChatBubble({
           initials
         )}
       </div>
-      <div className="flex flex-col gap-1 flex-1">
+      <div className="flex flex-col gap-1 flex-1 min-w-0">
         <div className="flex items-baseline gap-2 ml-1">
           <span className="text-[13px] font-semibold text-near-black">
             {formatSenderName(displayName)}
@@ -229,8 +236,8 @@ export function ChatBubble({
             {formatTime(msg.createdAt)}
           </span>
         </div>
-        <div className="flex items-center gap-2 w-full">
-          <div className="max-w-[85%] rounded-2xl border border-[#e8e2d9] bg-white px-5 py-3 shadow-sm">
+        <div className="relative max-w-[85%] w-fit">
+          <div className="relative z-10 w-full rounded-2xl border border-[#e8e2d9] bg-white px-5 py-3 shadow-sm overflow-hidden">
             <ReplyPreview />
             <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">
               {msg.text}
