@@ -51,6 +51,8 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const initializedRef = useRef(false);
   const lastScrollHeightRef = useRef<number>(0);
+  const lastChannelIdRef = useRef<string | null>(null);
+  const isScrollPreserveActive = useRef(false);
 
   useEffect(() => {
     if (!user || !channelId) {
@@ -60,6 +62,7 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
 
     let unsubscribe: (() => void) | undefined;
     initializedRef.current = false;
+    setInitializing(true);
     setMessages([]);
 
     const init = async () => {
@@ -71,15 +74,12 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
       setHasMore(firstPage.messages.length >= 20);
       setInitializing(false);
       
-      // Đánh dấu đã init xong để chuẩn bị cuộn
-      setTimeout(() => {
-        initializedRef.current = true;
-        // Cuộn xuống dưới cùng ngay lập tức khi mới vào phòng
-        bottomRef.current?.scrollIntoView({ behavior: "instant" as any });
-      }, 0);
-
       // Mark channel as read khi mở phòng
       await markChannelAsRead(channelId, user.uid);
+
+      const lastMessageIdRef = { 
+        current: firstPage.messages.length > 0 ? firstPage.messages[firstPage.messages.length - 1].id : "" 
+      };
 
       unsubscribe = listenLatestMessages(channelId, (latestMessages) => {
         setMessages((prev) => {
@@ -90,17 +90,29 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
           const merged = [...olderPart, ...latestMessages];
           const uniqueMap = new Map(merged.map((msg) => [msg.id, msg]));
           const newMessages = Array.from(uniqueMap.values());
-          
-          // Nếu có tin nhắn mới từ chính mình, cuộn xuống
-          const lastMsg = latestMessages[latestMessages.length - 1];
-          if (lastMsg && lastMsg.senderId === user.uid) {
-             setTimeout(() => {
-                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-             }, 50);
-          }
-          
           return newMessages;
         });
+
+        // Nếu có tin nhắn mới, kiểm tra xem có nên cuộn xuống không
+        const lastMsg = latestMessages[latestMessages.length - 1];
+        if (lastMsg) {
+          const isNewMessage = lastMsg.id !== lastMessageIdRef.current;
+          lastMessageIdRef.current = lastMsg.id;
+
+          if (isNewMessage) {
+            const isMine = lastMsg.senderId === user.uid;
+            const container = scrollContainerRef.current;
+            
+            if (container) {
+              const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+              if (isMine || isNearBottom) {
+                setTimeout(() => {
+                  bottomRef.current?.scrollIntoView({ behavior: isMine ? "smooth" : "auto" });
+                }, 100);
+              }
+            }
+          }
+        }
       });
     };
 
@@ -111,19 +123,45 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     };
   }, [user, channelId]);
 
+  // Cuộn xuống dưới cùng khi mới vào phòng hoặc đổi phòng (Initial Scroll)
+  useEffect(() => {
+    if (!initializing && messages.length > 0 && !initializedRef.current) {
+      const scrollDown = () => {
+        if (bottomRef.current) {
+          bottomRef.current.scrollIntoView({ behavior: "instant" as any });
+          initializedRef.current = true;
+        }
+      };
+      
+      // Đợi một frame để đảm bảo DOM đã render xong
+      requestAnimationFrame(() => {
+        scrollDown();
+        // Một số trường hợp cần thêm chút delay do ảnh hoặc nội dung chưa render hết
+        setTimeout(scrollDown, 100);
+      });
+    }
+  }, [initializing, messages, channelId]);
+
   // Logic giữ vị trí cuộn khi Load More
   useEffect(() => {
     if (loadingMore && scrollContainerRef.current) {
       lastScrollHeightRef.current = scrollContainerRef.current.scrollHeight;
+      isScrollPreserveActive.current = true;
     }
   }, [loadingMore]);
 
   useEffect(() => {
-    if (!loadingMore && lastScrollHeightRef.current > 0 && scrollContainerRef.current) {
+    if (
+      !loadingMore &&
+      isScrollPreserveActive.current &&
+      lastScrollHeightRef.current > 0 &&
+      scrollContainerRef.current
+    ) {
       const newHeight = scrollContainerRef.current.scrollHeight;
       const heightDifference = newHeight - lastScrollHeightRef.current;
       scrollContainerRef.current.scrollTop = heightDifference;
       lastScrollHeightRef.current = 0;
+      isScrollPreserveActive.current = false;
     }
   }, [messages, loadingMore]);
 
@@ -206,8 +244,32 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
     const msg = messages.find(m => m.id === messageId);
     if (!msg) return;
 
-    const isRemoving = msg.reactions?.[emoji]?.includes(user.uid) || false;
+    // 1. Tìm xem user đã có reaction nào trên tin nhắn này chưa
+    let existingEmoji: string | null = null;
+    if (msg.reactions) {
+      for (const [e, uids] of Object.entries(msg.reactions)) {
+        if (uids.includes(user.uid)) {
+          existingEmoji = e;
+          break;
+        }
+      }
+    }
+
     try {
+      // 2. Nếu đã có reaction và nó KHÁC với cái vừa bấm:
+      // Gỡ cái cũ trước
+      if (existingEmoji && existingEmoji !== emoji) {
+        await toggleMessageReaction({
+          channelId,
+          messageId,
+          uid: user.uid,
+          emoji: existingEmoji,
+          isRemoving: true,
+        });
+      }
+
+      // 3. Thực hiện toggle cho cái vừa bấm
+      const isRemoving = existingEmoji === emoji;
       await toggleMessageReaction({
         channelId,
         messageId,

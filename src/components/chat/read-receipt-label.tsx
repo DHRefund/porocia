@@ -41,9 +41,12 @@ export function ReadReceiptLabel({
   return (
     <>
       <button
-        onClick={() => setModalOpen(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setModalOpen(true);
+        }}
         className={cn(
-          "mt-1 flex items-center gap-1 text-xs text-stone transition-colors hover:text-olive",
+          "mt-1 flex items-center gap-1 text-xs text-stone transition-colors hover:text-olive relative z-10",
           isMine ? "justify-end pr-1" : "justify-start pl-1"
         )}
         title="See who read this"
@@ -53,7 +56,7 @@ export function ReadReceiptLabel({
         <span className="font-medium">
           Read {readerCount}
         </span>
-      </button>
+      </button> 
 
       {modalOpen && (
         <ReadReceiptModal

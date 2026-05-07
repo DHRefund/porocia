@@ -15,6 +15,8 @@ import {
   setDoc,
   startAfter,
   writeBatch,
+  updateDoc,
+  deleteField,
   QueryDocumentSnapshot,
   DocumentData,
   FieldValue,
@@ -308,6 +310,15 @@ export async function toggleMessageReaction(params: {
         [emoji]: arrayRemove(uid)
       }
     }, { merge: true });
+
+    // Sau khi remove, kiểm tra nếu mảng rỗng thì xóa hẳn key khỏi map
+    const snap = await getDoc(msgRef);
+    const reactions = snap.data()?.reactions ?? {};
+    if (reactions[emoji] && reactions[emoji].length === 0) {
+      await updateDoc(msgRef, {
+        [`reactions.${emoji}`]: deleteField()
+      });
+    }
   } else {
     await setDoc(msgRef, {
       reactions: {

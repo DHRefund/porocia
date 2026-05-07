@@ -94,18 +94,25 @@ export function ChatBubble({
   const ReactionList = () => {
     if (!msg.reactions || Object.keys(msg.reactions).length === 0) return null;
 
+    const entries = Object.entries(msg.reactions)
+      .filter(([, uids]) => uids && uids.length > 0);
+
+    if (entries.length === 0) return null;
+
     return (
       <div className={cn(
         "flex flex-wrap gap-1 mt-1",
         isMine ? "justify-end" : "justify-start"
       )}>
-        {Object.entries(msg.reactions).map(([emoji, uids]) => {
-          if (!uids || uids.length === 0) return null;
+        {entries.map(([emoji, uids]) => {
           const hasReacted = currentUserId && uids.includes(currentUserId);
           return (
             <button
               key={emoji}
-              onClick={() => onToggleReaction?.(msg.id, emoji)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleReaction?.(msg.id, emoji);
+              }}
               className={cn(
                 "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] transition-all border",
                 hasReacted 
@@ -124,13 +131,14 @@ export function ChatBubble({
 
   const ReactionPicker = () => (
     <div className={cn(
-      "absolute bottom-full mb-2 z-50 flex items-center gap-1 rounded-full bg-white p-1.5 shadow-xl border border-cream animate-in fade-in zoom-in duration-200",
+      "absolute bottom-full mb-3 z-[100] flex items-center gap-1 rounded-full bg-white p-1.5 shadow-2xl border border-cream animate-in fade-in zoom-in origin-bottom duration-200 whitespace-nowrap",
       isMine ? "right-0" : "left-0"
     )}>
       {EMOJIS.map(emoji => (
         <button
           key={emoji}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             onToggleReaction?.(msg.id, emoji);
             setShowEmojiPicker(false);
           }}
@@ -171,7 +179,7 @@ export function ChatBubble({
 
   if (isMine) {
     return (
-      <div className="group flex flex-col items-end gap-1">
+      <div className={cn("group flex flex-col items-end gap-1 relative", showEmojiPicker && "z-30")}>
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-2 mr-1">
             <span className="text-[11px] font-medium tracking-wide text-stone">
@@ -189,20 +197,22 @@ export function ChatBubble({
           </div>
         </div>
         <ReactionList />
-        <ReadReceiptLabel
-          channelId={channelId}
-          messageId={msg.id}
-          senderId={msg.senderId}
-          readBy={latestReadBy ?? []}
-          isMine={true}
-          currentUserId={currentUserId}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <ReadReceiptLabel
+            channelId={channelId}
+            messageId={msg.id}
+            senderId={msg.senderId}
+            readBy={latestReadBy ?? []}
+            isMine={true}
+            currentUserId={currentUserId}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="group flex flex-row items-start gap-4">
+    <div className={cn("group flex flex-row items-start gap-4 relative", showEmojiPicker && "z-30")}>
       <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
         {avatarUrl ? (
           <img src={avatarUrl} alt={msg.senderName} className="h-full w-full object-cover" />
@@ -210,7 +220,7 @@ export function ChatBubble({
           initials
         )}
       </div>
-      <div className="flex flex-col gap-1 flex-1 overflow-hidden">
+      <div className="flex flex-col gap-1 flex-1">
         <div className="flex items-baseline gap-2 ml-1">
           <span className="text-[13px] font-semibold text-near-black">
             {formatSenderName(displayName)}
@@ -229,14 +239,16 @@ export function ChatBubble({
           <ActionButtons />
         </div>
         <ReactionList />
-        <ReadReceiptLabel
-          channelId={channelId}
-          messageId={msg.id}
-          senderId={msg.senderId}
-          readBy={latestReadBy ?? []}
-          isMine={false}
-          currentUserId={currentUserId}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <ReadReceiptLabel
+            channelId={channelId}
+            messageId={msg.id}
+            senderId={msg.senderId}
+            readBy={latestReadBy ?? []}
+            isMine={false}
+            currentUserId={currentUserId}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { useAuth } from "@/components/auth-provider";
 import { useChat } from "@/hooks/use-chat";
@@ -36,6 +36,15 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
 
   const overscrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentOffsetRef = useRef(0);
+
+  // Cleanup memory leak khi unmount
+  useEffect(() => {
+    return () => {
+      if (overscrollTimeoutRef.current) {
+        clearTimeout(overscrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Logic Elastic Overscroll (Direct DOM Manipulation cho 60fps)
   const handleWheel = (e: React.WheelEvent) => {
