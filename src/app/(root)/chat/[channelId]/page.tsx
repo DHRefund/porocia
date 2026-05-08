@@ -9,17 +9,27 @@ export default async function ChannelPage({
   params: Promise<{ channelId: string }> 
 }) {
   const { channelId } = await params;
-  
-  // Fetch metadata trên server (có cache)
+
+  return (
+    <div className="flex flex-col h-full w-full overflow-hidden">
+      {/* Header + ChatPanel đều nằm trong dynamic stream, tránh lỗi PPR cache "not found" */}
+      <Suspense fallback={<ChatPageSkeleton />}>
+        <ChannelContent channelId={channelId} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ChannelContent({ channelId }: { channelId: string }) {
   const channel = await getChannelMetadataServer(channelId);
-  
+
   if (!channel) {
     notFound();
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      {/* Header của Chat có thể render ngay từ Server */}
+    <>
+      {/* Header */}
       <div className="flex h-16 items-center border-b border-warm/20 px-6 bg-background/95 backdrop-blur-sm z-20">
         <h3 className="text-sm font-bold tracking-widest uppercase text-near-black flex items-center gap-2">
           <span className="text-terracotta opacity-50">#</span>
@@ -30,10 +40,22 @@ export default async function ChannelPage({
         </p>
       </div>
 
-      {/* Phần tin nhắn sẽ được stream vào sau */}
+      {/* Chat messages */}
       <Suspense fallback={<ChatPanelSkeleton />}>
         <ChatPanel channelId={channelId} />
       </Suspense>
+    </>
+  );
+}
+
+function ChatPageSkeleton() {
+  return (
+    <div className="flex flex-col h-full w-full">
+      {/* Header skeleton */}
+      <div className="flex h-16 items-center border-b border-warm/20 px-6 bg-background/95 backdrop-blur-sm z-20">
+        <div className="h-4 w-32 bg-cream rounded animate-pulse" />
+      </div>
+      <ChatPanelSkeleton />
     </div>
   );
 }
