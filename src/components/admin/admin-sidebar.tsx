@@ -13,11 +13,11 @@ import {
 } from "lucide-react";
 
 const sidebarItems = [
-  { icon: LayoutDashboard, label: "Tổng quan", href: "/dashboard" },
-  { icon: Megaphone, label: "Thông báo", href: "/dashboard/announcements" },
-  { icon: Calendar, label: "Sự kiện", href: "/dashboard/events" },
-  { icon: Users, label: "Thành viên", href: "/dashboard/members" },
-  { icon: Settings, label: "Cài đặt", href: "/dashboard/settings" },
+  { icon: LayoutDashboard, label: "概要", href: "/dashboard" },
+  { icon: Megaphone, label: "お知らせ", href: "/dashboard/announcements" },
+  { icon: Calendar, label: "イベント", href: "/dashboard/events" },
+  { icon: Users, label: "メンバー", href: "/dashboard/members" },
+  { icon: Settings, label: "設定", href: "/dashboard/settings" },
 ];
 
 export function AdminSidebar() {
@@ -27,7 +27,7 @@ export function AdminSidebar() {
     <aside className="w-64 flex-shrink-0 border-r border-cream bg-ivory flex flex-col h-full">
       <div className="p-6 border-b border-cream">
         <h2 className="text-xs font-bold uppercase tracking-widest text-stone">Admin Control</h2>
-        <p className="mt-1 text-near-black font-semibold">Bảng quản trị</p>
+        <p className="mt-1 text-near-black font-semibold">管理パネル</p>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-4 space-y-1">
@@ -59,7 +59,7 @@ export function AdminSidebar() {
           href="/"
           className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-bold uppercase tracking-wider text-stone hover:text-terracotta transition-colors"
         >
-          Trang chủ hệ thống
+          システムホーム
         </Link>
       </div>
     </aside>

@@ -35,7 +35,7 @@ export default function NewAnnouncementPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("Kích thước ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+        alert("画像サイズが大きすぎます！5MB以下の画像を選択してください。");
         e.target.value = ""; // Reset input
         return;
       }
@@ -59,7 +59,7 @@ export default function NewAnnouncementPage() {
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || "Lỗi khi tải ảnh lên Cloudinary");
+      throw new Error(errorData.error?.message || "Cloudinaryへの画像アップロード中にエラーが発生しました");
     }
     
     const data = await response.json();
@@ -68,8 +68,8 @@ export default function NewAnnouncementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !content) return alert("Vui lòng điền đầy đủ tiêu đề và nội dung!");
-    if (!user) return alert("Bạn cần đăng nhập!");
+    if (!title || !content) return alert("タイトルと内容をすべて入力してください！");
+    if (!user) return alert("ログインが必要です！");
 
     setLoading(true);
     try {
@@ -101,7 +101,7 @@ export default function NewAnnouncementPage() {
       router.push("/dashboard/announcements");
     } catch (error) {
       console.error("Failed to create announcement:", error);
-      alert("Đã có lỗi xảy ra!");
+      alert("エラーが発生しました！");
     } finally {
       setLoading(false);
     }
@@ -118,8 +118,8 @@ export default function NewAnnouncementPage() {
           <ArrowLeft className="w-6 h-6" />
         </Link>
         <div>
-          <h1 className="text-3xl font-heading font-bold text-near-black">Đăng Thông báo mới</h1>
-          <p className="text-stone">Tạo thông báo để gửi đến tất cả thành viên trong hệ thống.</p>
+          <h1 className="text-3xl font-heading font-bold text-near-black">新しいお知らせを投稿</h1>
+          <p className="text-stone">システム内のすべてのメンバーに送信されるお知らせを作成します。</p>
         </div>
       </div>
 
@@ -129,10 +129,10 @@ export default function NewAnnouncementPage() {
           <div className="bg-white border border-cream rounded-2xl p-8 shadow-sm space-y-6">
             {/* Title */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-stone uppercase tracking-wider">Tiêu đề thông báo</label>
+              <label className="text-sm font-bold text-stone uppercase tracking-wider">お知らせのタイトル</label>
               <input 
                 type="text" 
-                placeholder="Nhập tiêu đề ngắn gọn, súc tích..."
+                placeholder="簡潔で分かりやすいタイトルを入力..."
                 className="w-full px-4 py-3 bg-ivory/30 border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-all text-lg font-bold text-near-black"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -143,13 +143,13 @@ export default function NewAnnouncementPage() {
             {/* Type & Pin */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-stone uppercase tracking-wider">Loại thông báo</label>
+                <label className="text-sm font-bold text-stone uppercase tracking-wider">お知らせのタイプ</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { val: "info", icon: Info, label: "Thông tin" },
-                    { val: "warning", icon: AlertTriangle, label: "Cảnh báo" },
-                    { val: "success", icon: CheckCircle, label: "Thành công" },
-                    { val: "event", icon: Calendar, label: "Sự kiện" },
+                    { val: "info", icon: Info, label: "情報" },
+                    { val: "warning", icon: AlertTriangle, label: "警告" },
+                    { val: "success", icon: CheckCircle, label: "成功" },
+                    { val: "event", icon: Calendar, label: "イベント" },
                   ].map((t) => (
                     <button
                       key={t.val}
@@ -169,7 +169,7 @@ export default function NewAnnouncementPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-stone uppercase tracking-wider">Tùy chọn hiển thị</label>
+                <label className="text-sm font-bold text-stone uppercase tracking-wider">表示オプション</label>
                 <label className="flex items-center gap-3 p-3 border border-cream rounded-xl bg-white cursor-pointer hover:bg-ivory/50 transition-colors">
                   <input 
                     type="checkbox" 
@@ -178,8 +178,8 @@ export default function NewAnnouncementPage() {
                     onChange={(e) => setIsPinned(e.target.checked)}
                   />
                   <div>
-                    <p className="font-bold text-near-black text-sm">Ghim lên đầu trang</p>
-                    <p className="text-xs text-stone">Ưu tiên hiển thị ở vị trí cao nhất</p>
+                    <p className="font-bold text-near-black text-sm">トップにピン留め</p>
+                    <p className="text-xs text-stone">最上部に優先的に表示します</p>
                   </div>
                 </label>
               </div>
@@ -187,10 +187,10 @@ export default function NewAnnouncementPage() {
 
             {/* Content */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-stone uppercase tracking-wider">Nội dung chi tiết</label>
+              <label className="text-sm font-bold text-stone uppercase tracking-wider">詳細内容</label>
               <textarea 
                 rows={8}
-                placeholder="Nhập nội dung thông báo tại đây..."
+                placeholder="お知らせの内容を入力してください..."
                 className="w-full px-4 py-3 bg-ivory/30 border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-all text-[15px] leading-relaxed text-near-black"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -200,7 +200,7 @@ export default function NewAnnouncementPage() {
 
             {/* Image Upload */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-stone uppercase tracking-wider">Ảnh minh họa (Không bắt buộc)</label>
+              <label className="text-sm font-bold text-stone uppercase tracking-wider">画像（任意）</label>
               <div className="relative group">
                 <input 
                   type="file" 
@@ -227,8 +227,8 @@ export default function NewAnnouncementPage() {
                   ) : (
                     <div className="flex flex-col items-center text-stone group-hover:text-terracotta transition-colors">
                       <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
-                      <p className="font-bold">Nhấn để tải ảnh lên</p>
-                      <p className="text-xs">PNG, JPG, GIF lên đến 5MB</p>
+                      <p className="font-bold">クリックして画像をアップロード</p>
+                      <p className="text-xs">PNG, JPG, GIF (最大5MB)</p>
                     </div>
                   )}
                 </label>
@@ -242,7 +242,7 @@ export default function NewAnnouncementPage() {
               href="/dashboard/announcements"
               className="px-6 py-3 text-stone font-bold hover:text-near-black transition-colors"
             >
-              Hủy bỏ
+              キャンセル
             </Link>
             <button
               type="submit"
@@ -252,12 +252,12 @@ export default function NewAnnouncementPage() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-ivory/30 border-t-ivory rounded-full animate-spin"></div>
-                  {uploadingImage ? "Đang tải ảnh..." : "Đang lưu..."}
+                  {uploadingImage ? "画像をアップロード中..." : "保存中..."}
                 </>
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  Đăng thông báo
+                  お知らせを投稿
                 </>
               )}
             </button>
@@ -269,7 +269,7 @@ export default function NewAnnouncementPage() {
           <div className="bg-ivory/50 border border-cream rounded-2xl p-6">
             <h3 className="font-bold text-near-black flex items-center gap-2 mb-4">
               <Eye className="w-5 h-5 text-terracotta" />
-              Xem trước hiển thị
+              プレビュー
             </h3>
             <div className="space-y-4">
               <div className={cn(
@@ -279,27 +279,27 @@ export default function NewAnnouncementPage() {
                 type === 'success' ? "bg-emerald-50 border-emerald-500 text-emerald-900" :
                 "bg-rose-50 border-rose-500 text-rose-900"
               )}>
-                <h4 className="font-bold text-sm mb-1">{title || "Tiêu đề mẫu"}</h4>
-                <p className="text-xs opacity-80 line-clamp-3">{content || "Nội dung thông báo sẽ hiển thị tại đây..."}</p>
+                <h4 className="font-bold text-sm mb-1">{title || "タイトルのプレビュー"}</h4>
+                <p className="text-xs opacity-80 line-clamp-3">{content || "ここにお知らせの内容が表示されます..."}</p>
               </div>
-              <p className="text-[11px] text-stone text-center italic">Đây là bản xem trước nhanh của thông báo.</p>
+              <p className="text-[11px] text-stone text-center italic">※これはクイックプレビューです。</p>
             </div>
           </div>
 
           <div className="bg-white border border-cream rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-near-black mb-3">Mẹo nhỏ</h3>
+            <h3 className="font-bold text-near-black mb-3">ヒント</h3>
             <ul className="text-sm text-stone space-y-3">
               <li className="flex gap-2">
                 <span className="text-terracotta">•</span>
-                Ghim các thông báo quan trọng để mọi người không bỏ lỡ.
+                重要なニュースはピン留めして、見逃されないようにしましょう。
               </li>
               <li className="flex gap-2">
                 <span className="text-terracotta">•</span>
-                Sử dụng ảnh minh họa để bài đăng thu hút hơn.
+                画像を使用すると、投稿がより目立ちやすくなります。
               </li>
               <li className="flex gap-2">
                 <span className="text-terracotta">•</span>
-                Chọn đúng loại thông báo (Cảnh báo, Sự kiện...) để user dễ phân biệt.
+                ユーザーが判別しやすいよう、適切なタイプ（警告、イベントなど）を選択してください。
               </li>
             </ul>
           </div>

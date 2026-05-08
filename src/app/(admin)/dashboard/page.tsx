@@ -41,9 +41,9 @@ export default async function AdminDashboardPage() {
   if (profile?.role !== 'admin') {
     return (
       <div className="flex h-[70vh] flex-col items-center justify-center text-center">
-        <h1 className="text-2xl font-bold text-near-black">Truy cập bị từ chối</h1>
-        <p className="text-stone mt-2">Bạn không có quyền truy cập vào khu vực quản trị.</p>
-        <Link href="/" className="mt-6 text-terracotta font-medium hover:underline">Quay lại trang chủ</Link>
+        <h1 className="text-2xl font-bold text-near-black">アクセス拒否</h1>
+        <p className="text-stone mt-2">管理者エリアへのアクセス権限がありません。</p>
+        <Link href="/" className="mt-6 text-terracotta font-medium hover:underline">ホームに戻る</Link>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-10">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-heading font-bold text-near-black">お帰りなさい、{profile?.displayName || "Admin"}！</h1>
+        <h1 className="text-3xl font-heading font-bold text-near-black">お帰りなさい、{profile?.displayName || "管理者"}！</h1>
         <p className="text-stone mt-2">本日のシステムアクティビティの概要です。</p>
       </div>
 
