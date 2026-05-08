@@ -22,15 +22,15 @@ export default async function AnnouncementsBento() {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-[10px] font-bold uppercase tracking-widest">
               <Megaphone className="w-3.5 h-3.5" />
-              Cập nhật mới nhất
+              最新のアップデート
             </div>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-near-black">Thông báo nội bộ</h2>
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-near-black">社内お知らせ</h2>
           </div>
           <Link 
             href="/announcements" 
             className="group flex items-center gap-2 text-stone font-bold text-sm uppercase tracking-widest hover:text-terracotta transition-colors pb-2"
           >
-            Xem tất cả
+            すべて見る
             <ArrowUpRight className="w-4 h-4 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

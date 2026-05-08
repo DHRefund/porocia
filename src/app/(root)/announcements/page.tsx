@@ -14,7 +14,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { ja } from "date-fns/locale";
 import { AnnouncementActions } from "@/components/announcements/announcement-actions";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
@@ -70,9 +70,9 @@ export default function PublicAnnouncementsPage() {
       <div className="space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-terracotta/10 text-terracotta text-[10px] font-bold uppercase tracking-widest">
           <Megaphone className="w-3.5 h-3.5" />
-          Bảng tin Porocia
+          POROCIA ニュースボード
         </div>
-        <h1 className="text-3xl md:text-4xl font-heading font-bold text-near-black">Thông báo mới nhất</h1>
+        <h1 className="text-3xl md:text-4xl font-heading font-bold text-near-black">最新のお知らせ</h1>
       </div>
 
       {/* Announcements Feed */}
@@ -80,7 +80,7 @@ export default function PublicAnnouncementsPage() {
         {announcements.length === 0 ? (
           <div className="text-center py-20 bg-ivory/30 rounded-3xl border border-dashed border-cream">
             <Megaphone className="w-12 h-12 text-stone mx-auto mb-4 opacity-20" />
-            <p className="text-stone font-medium">Hiện chưa có thông báo nào mới.</p>
+            <p className="text-stone font-medium">現在、新しいお知らせはありません。</p>
           </div>
         ) : (
           announcements.map((a) => (
@@ -103,7 +103,7 @@ export default function PublicAnnouncementsPage() {
                   {a.isPinned && (
                     <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1.5 bg-terracotta text-ivory rounded-full text-[10px] font-bold uppercase tracking-wider z-10 shadow-xl shadow-terracotta/20">
                       <Pin className="w-3 h-3 fill-ivory" />
-                      Đang Ghim
+                      ピン留め中
                     </div>
                   )}
                 </div>
@@ -115,7 +115,7 @@ export default function PublicAnnouncementsPage() {
                   {!a.imageURL && a.isPinned && (
                     <div className="flex items-center gap-1 text-terracotta">
                       <Pin className="w-3 h-3 fill-terracotta" />
-                      Ghim
+                      ピン留め
                     </div>
                   )}
                   <div className={cn(
@@ -129,7 +129,7 @@ export default function PublicAnnouncementsPage() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3 h-3" />
-                    {a.createdAt ? format(a.createdAt.toDate(), "dd/MM/yyyy", { locale: vi }) : "..."}
+                    {a.createdAt ? format(a.createdAt.toDate(), "yyyy年MM月dd日", { locale: ja }) : "..."}
                   </div>
                   <div className="flex items-center gap-1.5">
                     <User className="w-3 h-3" />

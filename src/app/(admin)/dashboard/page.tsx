@@ -53,16 +53,16 @@ export default async function AdminDashboardPage() {
     <div className="space-y-10">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-heading font-bold text-near-black">Chào mừng trở lại, {profile?.displayName || "Admin"}!</h1>
-        <p className="text-stone mt-2">Dưới đây là tổng quan về hoạt động hệ thống hôm nay.</p>
+        <h1 className="text-3xl font-heading font-bold text-near-black">お帰りなさい、{profile?.displayName || "Admin"}！</h1>
+        <p className="text-stone mt-2">本日のシステムアクティビティの概要です。</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: "Thông báo mới", value: "12", icon: Megaphone, color: "bg-terracotta" },
-          { label: "Sự kiện sắp tới", value: "05", icon: Calendar, color: "bg-olive" },
-          { label: "Tổng số User", value: userCount === -1 ? "Lỗi hệ thống" : userCount.toString(), icon: Users, color: "bg-stone" },
+          { label: "新着お知らせ", value: "12", icon: Megaphone, color: "bg-terracotta" },
+          { label: "今後のイベント", value: "05", icon: Calendar, color: "bg-olive" },
+          { label: "総ユーザー数", value: userCount === -1 ? "システムエラー" : userCount.toString(), icon: Users, color: "bg-stone" },
         ].map((stat, i) => (
           <div key={i} className="bg-white border border-cream p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
       <div>
         <h2 className="text-lg font-bold text-near-black mb-6 flex items-center gap-2">
           <Activity className="w-5 h-5 text-terracotta" />
-          Thao tác nhanh
+          クイックアクション
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link 
@@ -94,8 +94,8 @@ export default async function AdminDashboardPage() {
                 <Megaphone className="w-6 h-6 text-terracotta" />
               </div>
               <div>
-                <p className="font-bold text-near-black">Đăng thông báo mới</p>
-                <p className="text-sm text-stone">Thông báo cho toàn bộ thành viên</p>
+                <p className="font-bold text-near-black">新しいお知らせを投稿</p>
+                <p className="text-sm text-stone">全メンバーに通知を送信します</p>
               </div>
             </div>
             <ArrowRight className="w-5 h-5 text-stone group-hover:translate-x-1 transition-transform" />
@@ -110,8 +110,8 @@ export default async function AdminDashboardPage() {
                 <Calendar className="w-6 h-6 text-olive" />
               </div>
               <div>
-                <p className="font-bold text-near-black">Tạo sự kiện mới</p>
-                <p className="text-sm text-stone">Lên lịch họp hoặc hoạt động chung</p>
+                <p className="font-bold text-near-black">新しいイベントを作成</p>
+                <p className="text-sm text-stone">会議や共通のアクティビティをスケジュールします</p>
               </div>
             </div>
             <ArrowRight className="w-5 h-5 text-stone group-hover:translate-x-1 transition-transform" />
