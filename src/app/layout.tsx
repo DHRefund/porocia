@@ -28,7 +28,9 @@ export default function RootLayout({children,}: { children: React.ReactNode;}) {
               <SiteHeader />
             </Suspense>
             <main className="flex-1 min-h-0 overflow-y-auto">
-              {children}
+              <Suspense fallback={null}>
+                {children}
+              </Suspense>
             </main>
           </div>
         </AuthProvider>
