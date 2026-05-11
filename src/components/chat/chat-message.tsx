@@ -137,7 +137,7 @@ export function ChatBubble({
     <div 
       ref={pickerRef}
       className={cn(
-        "absolute bottom-full mb-3 z-30 flex items-center gap-1 rounded-full bg-white p-1.5 shadow-2xl border border-cream animate-in fade-in zoom-in origin-bottom duration-200 whitespace-nowrap",
+        "absolute bottom-full mb-3 z-30 flex flex-row items-center gap-1 rounded-full bg-white p-1.5 shadow-2xl border border-cream animate-in fade-in zoom-in origin-bottom duration-200 whitespace-nowrap w-max",
         isMine ? "right-0" : "left-0"
       )}>
       {EMOJIS.map(emoji => (
@@ -148,7 +148,7 @@ export function ChatBubble({
             onToggleReaction?.(msg.id, emoji);
             setShowEmojiPicker(false);
           }}
-          className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-cream transition-colors text-lg hover:scale-125 duration-200"
+          className="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-cream transition-colors text-lg hover:scale-125 duration-200"
         >
           {emoji}
         </button>
@@ -220,7 +220,7 @@ export function ChatBubble({
           </div>
 
           {/* Bubble */}
-          <div className="relative max-w-[75%] shrink-0">
+          <div className="relative max-w-[30%] shrink-0">
             <div className="relative z-10 w-full rounded-2xl rounded-tr-sm bg-[#cbefff] px-3.5 py-2.5 shadow-sm overflow-hidden text-near-black">
               <ReplyPreview />
               <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6]">
@@ -252,7 +252,7 @@ export function ChatBubble({
         </div>
         <div className="flex items-end gap-1.5 w-full">
           {/* Bubble */}
-          <div className="relative max-w-[75%] shrink-0">
+          <div className="relative max-w-[30%] shrink-0">
             <div className="relative z-10 w-full rounded-2xl rounded-tl-sm border border-[#e8e2d9] bg-white px-3.5 py-2.5 shadow-sm overflow-hidden">
               <ReplyPreview />
               <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">
