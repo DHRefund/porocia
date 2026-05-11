@@ -156,106 +156,138 @@ export function ChatBubble({
     </div>
   );
 
-  const ActionButtons = () => (
+  const ActionButtons = ({ className }: { className?: string }) => (
     <div className={cn(
-      "absolute z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5",
-      isMine ? "right-full mr-2" : "left-full ml-2",
-      "top-1/2 -translate-y-1/2"
+      "z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 whitespace-nowrap",
+      className
     )}>
       {showEmojiPicker && <ReactionPicker />}
       
+      {isMine && (
+        <button className="p-1 rounded-full hover:bg-stone/10 text-stone transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      )}
+
       {/* Reaction Button */}
       <button
         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-        className="p-2 rounded-full hover:bg-cream/50 text-stone hover:text-terracotta transition-colors"
+        className="p-1 rounded-full hover:bg-stone/10 text-stone transition-colors"
         title="Add reaction"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
       </button>
 
       {/* Reply Button */}
       <button
         onClick={() => onReply?.(msg)}
-        className="p-2 rounded-full hover:bg-cream/50 text-stone hover:text-terracotta transition-colors"
+        className="p-1 rounded-full hover:bg-stone/10 text-stone transition-colors"
         title="Reply"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
       </button>
     </div>
   );
 
   if (isMine) {
     return (
-      <div className="group flex flex-col items-end gap-1 relative">
-        <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-2 mr-1">
-            <span className="text-[11px] font-medium tracking-wide text-stone">
-              {formatTime(msg.createdAt)}
-            </span>
+      <div className="group flex flex-col items-end relative w-full mb-1">
+        <div className="flex items-end gap-1.5 w-full justify-end max-w-full">
+          
+          {/* Left Metadata Container */}
+          <div className="flex items-end gap-1 shrink-0 pb-0.5">
+            {/* Actions */}
+            <div className="relative h-full flex items-end pb-0.5">
+              <ActionButtons className="flex-row-reverse" />
+            </div>
+
+            {/* Read receipt & Time */}
+            <div className="flex flex-col items-end justify-end leading-none gap-1">
+              <div onClick={(e) => e.stopPropagation()}>
+                <ReadReceiptLabel
+                  channelId={channelId}
+                  messageId={msg.id}
+                  senderId={msg.senderId}
+                  readBy={latestReadBy ?? []}
+                  isMine={true}
+                  currentUserId={currentUserId}
+                />
+              </div>
+              <span className="text-[11px] font-medium text-stone tracking-tight">
+                {formatTime(msg.createdAt)}
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="relative max-w-[85%] w-fit">
-          <ActionButtons />
-          <div className="relative z-10 w-full rounded-2xl bg-[#fdf2e9] border border-[#f5e6d3] px-5 py-3 shadow-sm overflow-hidden">
-            <ReplyPreview />
-            <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">
-               {msg.text}
+
+          {/* Bubble */}
+          <div className="relative max-w-[75%] shrink-0">
+            <div className="relative z-10 w-full rounded-2xl rounded-tr-sm bg-[#cbefff] px-3.5 py-2.5 shadow-sm overflow-hidden text-near-black">
+              <ReplyPreview />
+              <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6]">
+                 {msg.text}
+              </div>
             </div>
           </div>
         </div>
+        {/* Reactions placed outside so they don't push metadata down */}
         <ReactionList />
-        <div onClick={(e) => e.stopPropagation()}>
-          <ReadReceiptLabel
-            channelId={channelId}
-            messageId={msg.id}
-            senderId={msg.senderId}
-            readBy={latestReadBy ?? []}
-            isMine={true}
-            currentUserId={currentUserId}
-          />
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="group flex flex-row items-start gap-4 relative">
-      <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
+    <div className="group flex flex-row items-start gap-2 relative mb-1 w-full">
+      <div className="mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#2a2a27] text-sm font-bold text-ivory">
         {avatarUrl ? (
           <img src={avatarUrl} alt={msg.senderName} className="h-full w-full object-cover" />
         ) : (
           initials
         )}
       </div>
-      <div className="flex flex-col gap-1 flex-1 min-w-0">
-        <div className="flex items-baseline gap-2 ml-1">
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex items-baseline ml-1 mb-1">
           <span className="text-[13px] font-semibold text-near-black">
             {formatSenderName(displayName)}
           </span>
-          <span className="text-[11px] font-medium tracking-wide text-stone">
-            {formatTime(msg.createdAt)}
-          </span>
         </div>
-        <div className="relative max-w-[85%] w-fit">
-          <div className="relative z-10 w-full rounded-2xl border border-[#e8e2d9] bg-white px-5 py-3 shadow-sm overflow-hidden">
-            <ReplyPreview />
-            <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">
-              {msg.text}
+        <div className="flex items-end gap-1.5 w-full">
+          {/* Bubble */}
+          <div className="relative max-w-[75%] shrink-0">
+            <div className="relative z-10 w-full rounded-2xl rounded-tl-sm border border-[#e8e2d9] bg-white px-3.5 py-2.5 shadow-sm overflow-hidden">
+              <ReplyPreview />
+              <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.6] text-near-black">
+                {msg.text}
+              </div>
             </div>
           </div>
-          <ActionButtons />
+
+          {/* Right Metadata Container */}
+          <div className="flex items-end gap-1 shrink-0 pb-0.5">
+            {/* Time & Read receipt */}
+            <div className="flex flex-col items-start justify-end leading-none gap-1">
+              <div onClick={(e) => e.stopPropagation()}>
+                <ReadReceiptLabel
+                  channelId={channelId}
+                  messageId={msg.id}
+                  senderId={msg.senderId}
+                  readBy={latestReadBy ?? []}
+                  isMine={false}
+                  currentUserId={currentUserId}
+                />
+              </div>
+              <span className="text-[11px] font-medium text-stone tracking-tight">
+                {formatTime(msg.createdAt)}
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div className="relative h-full flex items-end pb-0.5">
+              <ActionButtons />
+            </div>
+          </div>
         </div>
+        {/* Reactions placed outside so they don't push metadata down */}
         <ReactionList />
-        <div onClick={(e) => e.stopPropagation()}>
-          <ReadReceiptLabel
-            channelId={channelId}
-            messageId={msg.id}
-            senderId={msg.senderId}
-            readBy={latestReadBy ?? []}
-            isMine={false}
-            currentUserId={currentUserId}
-          />
-        </div>
       </div>
     </div>
   );
