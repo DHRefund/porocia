@@ -72,7 +72,7 @@ export function SignInForm() {
   React.useEffect(() => {
     if (!loading && user) {
       const params = new URLSearchParams(window.location.search)
-      router.push(params.get("redirect") || "/chat")
+      router.push(params.get("redirect") || "/")
     }
   }, [user, loading, router])
 
@@ -118,8 +118,8 @@ export function SignInForm() {
 
       const params = new URLSearchParams(window.location.search)
 
-      router.push(params.get("redirect") || "/chat")
-      router.refresh()
+      router.push(params.get("redirect") || "/")
+      // router.refresh()
     } catch (error: any) {
       setServerError(
         FIREBASE_ERRORS[error?.code] ||
