@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ReadReceiptModal } from "@/components/chat/read-receipt-modal";
+import { ReadReceiptModal } from "@/components/chat/ReadReceiptModal";
 import { createPortal } from "react-dom";
 
 interface ReadReceiptLabelProps {

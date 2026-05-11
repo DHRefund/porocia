@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 
-import { useAuth } from "@/components/auth-provider";
-import { useChat } from "@/hooks/use-chat";
-import { ChatBubble } from "@/components/chat/chat-message";
-import { ChatInput } from "@/components/chat/chat-input";
+import { useAuth } from "@/components/AuthProvider";
+import { useChat } from "@/hooks/useChat";
+import { ChatBubble } from "@/components/chat/ChatBubble";
+import { ChatInput } from "@/components/chat/ChatInput";
 
 interface ChatPanelProps {
   channelId: string;

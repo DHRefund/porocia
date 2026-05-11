@@ -1,8 +1,8 @@
 "use client";
 
 import { use } from "react";
-import { ChatPanel } from "@/components/chat/chat-panel";
-import { useChannels } from "@/hooks/use-channels";
+import { ChatPanel } from "@/components/chat/ChatPanel";
+import { useChannels } from "@/hooks/useChannels";
 import { notFound } from "next/navigation";
 
 export default function ChannelPage({ 

@@ -1,5 +1,5 @@
 import { ChatMessage } from "@/lib/firebase/chat";
-import { ReadReceiptLabel } from "@/components/chat/read-receipt-label";
+import { ReadReceiptLabel } from "@/components/chat/ReadReceiptLabel";
 import { UserProfile } from "@/lib/firebase/chat";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";

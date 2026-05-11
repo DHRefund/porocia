@@ -1,5 +1,5 @@
 import "./globals.css";
-import { AuthProvider } from "@/components/auth-provider";
+import { AuthProvider } from "@/components/AuthProvider";
 import { Geist, Noto_Serif_JP } from "next/font/google";
 
 

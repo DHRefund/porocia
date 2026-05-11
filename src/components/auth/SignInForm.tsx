@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import * as z from "zod"
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/components/AuthProvider";
 
 import { Button } from "@/components/ui/button"
 import {

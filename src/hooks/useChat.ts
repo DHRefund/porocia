@@ -11,7 +11,7 @@ import {
   toggleMessageReaction,
 } from "@/lib/firebase/chat";
 import { User } from "firebase/auth";
-import { UserProfile } from "@/components/auth-provider";
+import { UserProfile } from "@/components/AuthProvider";
 
 export type ChatMessage = {
   id: string;

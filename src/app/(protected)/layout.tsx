@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/components/layout/site-header";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Suspense } from "react";
 
 export default function ProtectedLayout({

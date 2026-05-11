@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { listenMessageReadReceipt } from "@/lib/firebase/chat";
-import { UserProfile } from "@/components/auth-provider";
+import { UserProfile } from "@/components/AuthProvider";
 
 interface ReadReceiptResult {
   readUsers: UserProfile[];

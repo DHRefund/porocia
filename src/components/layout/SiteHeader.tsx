@@ -4,18 +4,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/components/AuthProvider";
 import { logout } from "@/lib/firebase/auth";
-import { useChannels } from "@/hooks/use-channels";
+import { useChannels } from "@/hooks/useChannels";
 
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "Chat", href: "/chat" },
-  { label: "People", href: "/people" },
-  { label: "Knowledge", href: "/knowledge" },
-  { label: "Announcements", href: "/announcements" },
-  { label: "Profile", href: "/profile" },
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "ホーム", href: "/" },
+  { label: "チャット", href: "/chat" },
+  { label: "メンバー", href: "/people" },
+  { label: "ナレッジ", href: "/knowledge" },
+  { label: "お知らせ", href: "/announcements" },
+  { label: "プロフィール", href: "/profile" },
+  { label: "ダッシュボード", href: "/dashboard" },
 ];
 
 const getInitials = (name: string) => {
@@ -33,7 +33,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const displayName = profile?.displayName || user?.email?.split("@")[0] || "User";
+  const displayName = profile?.displayName || user?.email?.split("@")[0] || "ユーザー";
 
   // True if any channel has unread messages for the current user
   const hasChatUnread =
@@ -131,7 +131,7 @@ export function SiteHeader() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
                         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                       </svg>
-                      View Profile
+                      プロフィールを表示
                     </Link>
 
                     <Link
@@ -142,7 +142,7 @@ export function SiteHeader() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                       </svg>
-                      Go to Chat
+                      チャットへ移動
                     </Link>
                   </div>
 
@@ -155,7 +155,7 @@ export function SiteHeader() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
                       </svg>
-                      Đăng xuất
+                      ログアウト
                     </button>
                   </div>
                 </div>
@@ -167,13 +167,13 @@ export function SiteHeader() {
                 href="/login"
                 className="px-3 py-2 text-[15px] font-medium text-olive hover:text-near-black"
               >
-                Sign In
+                ログイン
               </Link>
               <Link
                 href="/login"
                 className="ml-2 inline-flex h-11 items-center justify-center rounded-xl border border-terracotta bg-terracotta px-5 text-[15px] font-medium text-ivory shadow-none hover:bg-[#bf5d3c]"
               >
-                Get Started
+                今すぐ始める
               </Link>
             </>
           )}

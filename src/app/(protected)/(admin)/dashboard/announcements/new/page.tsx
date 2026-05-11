@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/components/AuthProvider";
 import { createAnnouncement } from "@/lib/firebase/announcements";
 import { 
   ArrowLeft, 

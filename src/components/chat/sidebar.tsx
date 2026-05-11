@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useChannels } from "@/hooks/use-channels";
-import { useAuth } from "@/components/auth-provider";
+import { useChannels } from "@/hooks/useChannels";
+import { useAuth } from "@/components/AuthProvider";
 import { Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 

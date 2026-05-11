@@ -15,7 +15,7 @@ import {
   listenComments,
   getCommentCount
 } from "@/lib/firebase/announcements";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/components/AuthProvider";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 

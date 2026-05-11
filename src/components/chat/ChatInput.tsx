@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChatMessage } from "@/hooks/use-chat";
+import { ChatMessage } from "@/hooks/useChat";
 
 interface ChatInputProps {
   input: string;
