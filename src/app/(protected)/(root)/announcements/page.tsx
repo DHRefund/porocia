@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { AnnouncementActions } from "@/components/announcements/announcement-actions";
+import { AnnouncementActions } from "@/components/announcements/AnnouncementActions";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 
