@@ -7,21 +7,34 @@ import { useAuth } from "@/components/auth-provider";
 import { Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Sidebar({ initialChannels = [] }: { initialChannels?: any[] }) {
+export function Sidebar() {
   const pathname = usePathname();
-  const { channels, loading } = useChannels(initialChannels);
+  const { channels, loading } = useChannels();
   const { user } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="w-64 border-r border-warm bg-ivory flex flex-col h-full animate-pulse">
+        <div className="p-4 border-b border-warm/20">
+          <div className="h-6 w-24 bg-cream rounded" />
+        </div>
+        <div className="flex-1 p-3 space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-8 w-full bg-cream rounded-md" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-64 border-r border-warm bg-ivory flex flex-col h-full">
       <div className="p-4 border-b border-warm/20">
-        <h2 className="text-lg font-bold tracking-widest uppercase">Channels</h2>
+        <h2 className="text-lg font-bold tracking-widest uppercase text-near-black">Channels</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-1">
-        {loading ? (
-          <div className="text-sm text-stone p-2">Loading channels...</div>
-        ) : channels.length === 0 ? (
+        {channels.length === 0 ? (
           <div className="text-sm text-stone p-2">No channels found.</div>
         ) : (
           channels.map((channel) => {

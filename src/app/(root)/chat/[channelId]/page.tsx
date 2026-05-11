@@ -1,34 +1,34 @@
-import { Suspense } from "react";
+"use client";
+
+import { use } from "react";
 import { ChatPanel } from "@/components/chat/chat-panel";
-import { getChannelMetadataServer } from "@/lib/firebase/chat-server";
+import { useChannels } from "@/hooks/use-channels";
 import { notFound } from "next/navigation";
 
-export default async function ChannelPage({ 
+export default function ChannelPage({ 
   params 
 }: { 
   params: Promise<{ channelId: string }> 
 }) {
-  const { channelId } = await params;
+  const { channelId } = use(params);
+  const { channels, loading } = useChannels();
 
+  if (loading) {
+    return <ChatPageSkeleton />;
+  }
+
+  const channel = channels.find(c => c.id === channelId);
+
+  if (!channel) {
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      {/* Header + ChatPanel đều nằm trong dynamic stream, tránh lỗi PPR cache "not found" */}
-      <Suspense fallback={<ChatPageSkeleton />}>
-        <ChannelContent channelId={channelId} />
-      </Suspense>
+    <div className="flex h-full items-center justify-center text-stone">
+      Channel not found
     </div>
   );
 }
 
-async function ChannelContent({ channelId }: { channelId: string }) {
-  const channel = await getChannelMetadataServer(channelId);
-
-  if (!channel) {
-    notFound();
-  }
-
   return (
-    <>
+    <div className="flex flex-col h-full w-full overflow-hidden">
       {/* Header */}
       <div className="flex h-16 items-center border-b border-warm/20 px-6 bg-background/95 backdrop-blur-sm z-20">
         <h3 className="text-sm font-bold tracking-widest uppercase text-near-black flex items-center gap-2">
@@ -41,10 +41,8 @@ async function ChannelContent({ channelId }: { channelId: string }) {
       </div>
 
       {/* Chat messages */}
-      <Suspense fallback={<ChatPanelSkeleton />}>
-        <ChatPanel channelId={channelId} />
-      </Suspense>
-    </>
+      <ChatPanel channelId={channelId} />
+    </div>
   );
 }
 
