@@ -49,18 +49,23 @@ export function ChatInput({
           </svg>
         </button>
         
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Message the community..."
-          className="flex-1 bg-transparent px-2 py-3 text-[15px] text-near-black placeholder:text-stone focus:outline-none"
-        />
+        <textarea
+  value={input}
+  onChange={(e) => {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  }}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      handleSend();
+    }
+  }}
+  rows={1}
+  placeholder="Message the community..."
+  className="flex-1 resize-none bg-transparent px-2 py-3 text-[15px] text-near-black placeholder:text-stone focus:outline-none overflow-hidden"
+/>
         
         <div className="flex items-center gap-1">
           <button className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-stone transition-colors hover:text-dark">

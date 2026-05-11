@@ -12,12 +12,10 @@ export type Channel = {
 };
 
 /**
- * Fetch danh sách channels trên Server với Cache.
+ * Fetch danh sách channels trên Server.
+ * Loại bỏ "use cache" để tránh cache nhầm kết quả lỗi trên Vercel.
  */
 export async function getChannelsServer() {
-  "use cache";
-  cacheLife('default'); // Mặc định revalidate sau 15 phút, stale 5 phút
-
   try {
     const snapshot = await adminDb
       .collection('channels')
@@ -37,15 +35,15 @@ export async function getChannelsServer() {
 
 /**
  * Fetch thông tin chi tiết của một Channel.
- * Dùng để render tiêu đề Chat Panel ngay trên Server.
+ * Bỏ "use cache" để đảm bảo tính chính xác, tránh lỗi 404 giả do cache trên Vercel.
  */
 export async function getChannelMetadataServer(channelId: string) {
-  "use cache";
-  cacheLife('default');
-
   try {
     const doc = await adminDb.collection('channels').doc(channelId).get();
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      console.warn(`Channel with ID ${channelId} not found in Firestore.`);
+      return null;
+    }
 
     const data = doc.data()!;
     return {
@@ -54,7 +52,8 @@ export async function getChannelMetadataServer(channelId: string) {
       createdAt: data.createdAt?.toDate?.() || new Date(),
     } as Channel;
   } catch (error) {
-    console.error("Error fetching channel metadata:", error);
+    console.error("Error fetching channel metadata for:", channelId, error);
+    // Trả về null để trigger notFound() ở page, nhưng không cache kết quả này
     return null;
   }
 }
