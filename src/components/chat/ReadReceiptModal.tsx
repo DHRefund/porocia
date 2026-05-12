@@ -53,8 +53,9 @@ export function ReadReceiptModal({
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Filter out the sender and current user from readBy for the count
-  const readerUids = readBy.filter((uid) => uid !== senderId && uid !== currentUserId);
+  // Chỉ loại sender ra khỏi danh sách (đồng bộ với ReadReceiptLabel).
+  // currentUserId (viewer) được tính vào để nhất quán với số hiển thị ở label.
+  const readerUids = readBy.filter((uid) => uid !== senderId);
 
   useEffect(() => {
     setMounted(true);

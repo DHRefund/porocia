@@ -112,10 +112,15 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
 
         <div className="space-y-8">
           {(() => {
-            const latestReads: Record<string, string> = {};
+            // Bước 1: Tính thời điểm đọc cuối cùng (mới nhất) của mỗi user
+            // dựa trên createdAt của tin nhắn có readBy chứa UID đó.
+            const userLastReadTime: Record<string, number> = {};
             messages.forEach((msg) => {
+              const msgTime = msg.createdAt?.toMillis?.() ?? msg.createdAt?.toDate?.().getTime?.() ?? 0;
               (msg.readBy || []).forEach((uid) => {
-                latestReads[uid] = msg.id;
+                if (!userLastReadTime[uid] || msgTime > userLastReadTime[uid]) {
+                  userLastReadTime[uid] = msgTime;
+                }
               });
             });
 
@@ -133,8 +138,12 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
 
             return messages.flatMap((msg) => {
               const isMine = msg.senderId === user?.uid;
-              const latestReadBy = (msg.readBy || []).filter(
-                (uid) => latestReads[uid] === msg.id
+
+              // Bước 2: Với mỗi tin nhắn, lọc những user có "thời điểm đọc cuối"
+              // >= thời điểm tạo tin nhắn này → nghĩa là họ đã đọc đến đây hoặc xa hơn.
+              const currentMsgTime = msg.createdAt?.toMillis?.() ?? msg.createdAt?.toDate?.().getTime?.() ?? 0;
+              const latestReadBy = Object.keys(userLastReadTime).filter(
+                (uid) => userLastReadTime[uid] >= currentMsgTime && currentMsgTime > 0
               );
 
               const currentDateString = getDateString(msg.createdAt);

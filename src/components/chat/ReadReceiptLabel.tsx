@@ -32,9 +32,10 @@ export function ReadReceiptLabel({
 }: ReadReceiptLabelProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Exclude both the sender AND the current viewer from the count
+  // Chỉ loại sender khỏi count (sender tự đọc tin của mình không được tính).
+  // currentUserId (viewer) được tính vào để hiển thị "tôi đã đọc" trên tin nhắn của người khác.
   const readerCount = (readBy ?? []).filter(
-    (uid) => uid !== senderId && uid !== currentUserId
+    (uid) => uid !== senderId
   ).length;
 
   if (readerCount === 0) return null;
