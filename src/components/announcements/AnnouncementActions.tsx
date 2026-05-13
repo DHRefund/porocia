@@ -8,6 +8,7 @@ import {
   Smile,
   MoreHorizontal
 } from "lucide-react";
+import { toast } from "sonner";
 import { 
   AnnouncementComment, 
   toggleReaction, 
@@ -50,11 +51,18 @@ export function AnnouncementActions({ announcement }: { announcement: any }) {
   }, [showComments, announcement.id]);
 
   const handleToggleLike = async () => {
-    if (!user) return alert("Vui lòng đăng nhập để tương tác!");
+    if (!user) {
+      toast.warning("ログインが必要です", {
+        description: "操作を続けるにはログインしてください。",
+      });
+      return;
+    }
     try {
       await toggleReaction(announcement.id, user.uid);
     } catch (error) {
-      console.error("Failed to toggle like:", error);
+      toast.error("エラーが発生しました", {
+        description: "リアクションの更新に失敗しました。",
+      });
     }
   };
 
@@ -72,8 +80,11 @@ export function AnnouncementActions({ announcement }: { announcement: any }) {
       });
       setNewComment("");
       if (!showComments) setCommentCount(prev => prev + 1);
+      toast.success("コメントを投稿しました");
     } catch (error) {
-      console.error("Failed to add comment:", error);
+      toast.error("投稿に失敗しました", {
+        description: "もう一度お試しください。",
+      });
     } finally {
       setIsSubmitting(false);
     }

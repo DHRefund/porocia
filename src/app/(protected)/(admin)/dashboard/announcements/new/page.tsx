@@ -16,6 +16,7 @@ import {
   Eye
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function NewAnnouncementPage() {
   const router = useRouter();
@@ -35,7 +36,9 @@ export default function NewAnnouncementPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("画像サイズが大きすぎます！5MB以下の画像を選択してください。");
+        toast.warning("画像サイズが大きすぎます", {
+          description: "5MB以下の画像を選択してください。",
+        });
         e.target.value = ""; // Reset input
         return;
       }
@@ -68,8 +71,18 @@ export default function NewAnnouncementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !content) return alert("タイトルと内容をすべて入力してください！");
-    if (!user) return alert("ログインが必要です！");
+    if (!title || !content) {
+      toast.warning("入力内容が不足しています", {
+        description: "タイトルと内容をすべて入力してください。",
+      });
+      return;
+    }
+    if (!user) {
+      toast.error("ログインが必要です", {
+        description: "操作を続けるにはログインしてください。",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -98,10 +111,16 @@ export default function NewAnnouncementPage() {
       setImage(null);
       setImagePreview(null);
 
+      toast.success(type === "event" ? "イベントを投稿しました" : "お知らせを投稿しました", {
+        description: "メンバー全員に通知が送信されました。",
+      });
+
       router.push("/dashboard/announcements");
     } catch (error) {
       console.error("Failed to create announcement:", error);
-      alert("エラーが発生しました！");
+      toast.error("投稿に失敗しました", {
+        description: "エラーが発生しました。もう一度お試しください。",
+      });
     } finally {
       setLoading(false);
     }

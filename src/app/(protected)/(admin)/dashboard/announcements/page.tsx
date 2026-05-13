@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { toast } from "sonner";
 
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -47,8 +48,13 @@ export default function AnnouncementsPage() {
       try {
         await deleteAnnouncement(id);
         setAnnouncements(prev => prev.filter(a => a.id !== id));
+        toast.success("削除しました", {
+          description: "お知らせが正常に削除されました。",
+        });
       } catch (error) {
-        alert("削除に失敗しました。");
+        toast.error("削除に失敗しました", {
+          description: "エラーが発生しました。もう一度お試しください。",
+        });
       }
     }
   };
@@ -62,8 +68,9 @@ export default function AnnouncementsPage() {
         if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
         return 0;
       }));
+      toast.success(currentPinned ? "ピン留めを解除しました" : "トップにピン留めしました");
     } catch (error) {
-      alert("更新に失敗しました。");
+      toast.error("更新に失敗しました");
     }
   };
 

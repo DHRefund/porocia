@@ -18,6 +18,8 @@ const notoSerifJP = Noto_Serif_JP({
   display: "swap",
 });
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({children,}: { children: React.ReactNode;}) {
   return (
     <html lang="en" className={`${geistSans.variable}  ${notoSerifJP.variable}`}>
@@ -27,6 +29,7 @@ export default function RootLayout({children,}: { children: React.ReactNode;}) {
             {children}
           </AuthProvider>
         </Suspense>
+        <Toaster />
       </body>
     </html>
   );

@@ -109,10 +109,11 @@ export function SignInForm() {
       }
 
       toast.success(
-        isSignIn ? "ログインしました" : "アカウントを作成しました",
+        isSignIn ? "おかえりなさい！" : "ようこそ、Porociaへ",
         {
-          description: "ワークスペースへ移動しています...",
-          position: "bottom-right",
+          description: isSignIn 
+            ? "正常にログインしました。ワークスペースへ移動しています..." 
+            : "アカウントが正常に作成されました。チームへようこそ！",
         }
       )
 

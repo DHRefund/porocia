@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/AuthProvider";
 import { logout } from "@/lib/firebase/auth";
 import { useChannels } from "@/hooks/useChannels";
+import { toast } from "sonner";
 
 const navItems = [
   { label: "ホーム", href: "/" },
@@ -54,6 +55,9 @@ export function SiteHeader() {
   const handleLogout = async () => {
     setOpen(false);
     await logout();
+    toast.success("ログアウトしました", {
+      description: "セッションが安全に終了されました。またのご利用をお待ちしております。",
+    });
     router.push("/login");
   };
 
