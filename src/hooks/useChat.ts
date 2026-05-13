@@ -28,7 +28,9 @@ export type ChatMessage = {
   // Thêm trường replyTo
   replyTo?: {
     messageId: string;
+    senderId: string;
     senderName: string;
+    senderPhotoURL?: string;
     text: string;
   };
   // Thêm trường reactions: emoji -> [uids]
@@ -223,7 +225,9 @@ export function useChat(channelId: string, user: User | null, profile: UserProfi
         // Đính kèm thông tin reply nếu có
         replyTo: replyingTo ? {
           messageId: replyingTo.id,
+          senderId: replyingTo.senderId,
           senderName: replyingTo.senderName,
+          senderPhotoURL: replyingTo.senderPhotoURL || "",
           text: replyingTo.text,
         } : undefined,
       });

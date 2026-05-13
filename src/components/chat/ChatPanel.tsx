@@ -153,7 +153,11 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
               }
 
               const elements = [];
-
+              const allProfiles = { ...senderProfiles };
+              if (user?.uid && profile) {
+                allProfiles[user.uid] = profile as any;
+              }
+              
               if (showDateSeparator) {
                 elements.push(
                   <div
@@ -176,6 +180,7 @@ export function ChatPanel({ channelId }: ChatPanelProps) {
                   currentUserProfile={isMine ? (profile as any) : senderProfiles[msg.senderId]}
                   onReply={setReplyingTo}
                   onToggleReaction={handleToggleReaction}
+                  senderProfiles={allProfiles}
                 />
               );
 

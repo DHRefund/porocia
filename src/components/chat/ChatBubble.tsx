@@ -40,6 +40,8 @@ interface ChatBubbleProps {
   currentUserProfile?: UserProfile | null;
   onReply?: (msg: ChatMessage) => void;
   onToggleReaction?: (messageId: string, emoji: string) => void;
+  /** All known sender profiles in this channel */
+  senderProfiles?: Record<string, UserProfile>;
 }
 
 const EMOJIS = ["❤️", "👍", "😂", "🔥", "😮", "😢"];
@@ -52,7 +54,8 @@ export function ChatBubble({
   latestReadBy, 
   currentUserProfile,
   onReply,
-  onToggleReaction
+  onToggleReaction,
+  senderProfiles
 }: ChatBubbleProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -73,6 +76,12 @@ export function ChatBubble({
 
   const ReplyPreview = () => {
     if (!msg.replyTo) return null;
+    
+    // Ưu tiên lấy ảnh từ senderProfiles (luôn là ảnh mới nhất)
+    // Fallback về senderPhotoURL lưu trong tin nhắn (cho tin nhắn cũ)
+    const replySenderProfile = senderProfiles?.[msg.replyTo.senderId];
+    const replyPhoto = replySenderProfile?.photoURL || msg.replyTo.senderPhotoURL;
+    
     return (
       <div 
         className={cn(
@@ -81,7 +90,11 @@ export function ChatBubble({
         )}
       >
         <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone/20 text-[9px] font-bold uppercase text-stone">
-          {getInitials(formatSenderName(msg.replyTo.senderName))}
+          {replyPhoto ? (
+            <img src={replyPhoto} alt={msg.replyTo.senderName} className="h-full w-full object-cover" />
+          ) : (
+            getInitials(formatSenderName(msg.replyTo.senderName))
+          )}
         </div>
         <div className="flex flex-col min-w-0">
           <p className="truncate text-[12px] font-bold text-near-black leading-tight mb-0.5">

@@ -40,7 +40,9 @@ export type ChatMessage = {
   // Thêm trường replyTo
   replyTo?: {
     messageId: string;
+    senderId: string;
     senderName: string;
+    senderPhotoURL?: string;
     text: string;
   };
   // Thêm trường reactions: emoji -> [uids]
@@ -110,6 +112,7 @@ export async function sendMessage(params: {
   replyTo?: {
     messageId: string;
     senderName: string;
+    senderPhotoURL?: string;
     text: string;
   };
 }) {
