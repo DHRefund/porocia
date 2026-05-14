@@ -1,34 +1,53 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { X, Calendar as CalendarIcon, Clock, Tag, AlignLeft } from 'lucide-react'
+import { X, AlignLeft, Clock, Tag } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { CalendarEvent } from '@/lib/firebase/events'
 
 interface AddEventModalProps {
   isOpen: boolean
   onClose: () => void
   onAdd: (event: any) => void
+  onUpdate?: (id: string, updates: any) => void
   selectedSlot?: { start: Date, end: Date }
+  editingEvent?: CalendarEvent | null
 }
 
-export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: AddEventModalProps) {
+export default function AddEventModal({ 
+  isOpen, 
+  onClose, 
+  onAdd, 
+  onUpdate,
+  selectedSlot,
+  editingEvent 
+}: AddEventModalProps) {
   const [title, setTitle] = useState('')
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [type, setType] = useState('event')
 
-  // Cập nhật thời gian khi người dùng click vào ô trên lịch
+  // Sync state with editingEvent or selectedSlot
   useEffect(() => {
-    if (selectedSlot) {
+    if (editingEvent) {
+      setTitle(editingEvent.title)
+      setStart(format(editingEvent.start, "yyyy-MM-dd'T'HH:mm"))
+      setEnd(format(editingEvent.end, "yyyy-MM-dd'T'HH:mm"))
+      setType(editingEvent.type)
+    } else if (selectedSlot) {
+      setTitle('')
       setStart(format(selectedSlot.start, "yyyy-MM-dd'T'HH:mm"))
       setEnd(format(selectedSlot.end, "yyyy-MM-dd'T'HH:mm"))
+      setType('event')
     } else {
+      setTitle('')
       const now = new Date()
       setStart(format(now, "yyyy-MM-dd'T'HH:mm"))
       setEnd(format(new Date(now.getTime() + 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm"))
+      setType('event')
     }
-  }, [selectedSlot, isOpen])
+  }, [selectedSlot, editingEvent, isOpen])
 
   if (!isOpen) return null
 
@@ -39,26 +58,26 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: 
       return
     }
 
-    const newEvent = {
-      id: Math.random(),
+    const eventData = {
       title,
       start: new Date(start),
       end: new Date(end),
       type
     }
 
-    onAdd(newEvent)
-    toast.success("イベントを追加しました", {
-      description: title
-    })
+    if (editingEvent && onUpdate) {
+      onUpdate(editingEvent.id, eventData)
+      toast.success("イベントを更新しました")
+    } else {
+      onAdd(eventData)
+      toast.success("イベントを追加しました")
+    }
     
-    // Reset & Close
-    setTitle('')
     onClose()
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-near-black/40 backdrop-blur-sm animate-in fade-in duration-300" 
@@ -74,7 +93,9 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-terracotta/10 text-terracotta">
               <PlusIcon size={20} />
             </div>
-            <h2 className="font-heading text-xl font-bold text-near-black">新しいイベント</h2>
+            <h2 className="font-heading text-xl font-bold text-near-black">
+              {editingEvent ? 'イベントを編集' : '新しいイベント'}
+            </h2>
           </div>
           <button 
             onClick={onClose}
@@ -93,7 +114,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: 
             <input 
               autoFocus
               type="text" 
-              value={title}
+              value={title || ''}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="何をする予定ですか？"
               className="w-full bg-ivory/30 border border-cream rounded-2xl px-5 py-4 text-near-black placeholder:text-stone/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-all"
@@ -108,7 +129,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: 
               </label>
               <input 
                 type="datetime-local" 
-                value={start}
+                value={start || ''}
                 onChange={(e) => setStart(e.target.value)}
                 className="w-full bg-ivory/30 border border-cream rounded-2xl px-4 py-3 text-sm text-near-black focus:outline-none focus:ring-2 focus:ring-terracotta/20"
               />
@@ -119,7 +140,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: 
               </label>
               <input 
                 type="datetime-local" 
-                value={end}
+                value={end || ''}
                 onChange={(e) => setEnd(e.target.value)}
                 className="w-full bg-ivory/30 border border-cream rounded-2xl px-4 py-3 text-sm text-near-black focus:outline-none focus:ring-2 focus:ring-terracotta/20"
               />
@@ -169,7 +190,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd, selectedSlot }: 
               type="submit"
               className="bg-terracotta text-ivory px-8 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-terracotta/20 hover:bg-[#bf5d3c] active:scale-95 transition-all"
             >
-              保存する
+              {editingEvent ? '更新する' : '保存する'}
             </button>
           </div>
         </form>

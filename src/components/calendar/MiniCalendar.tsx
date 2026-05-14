@@ -15,19 +15,28 @@ import {
   isSameDay, 
   eachDayOfInterval 
 } from 'date-fns'
-import { ja } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MiniCalendarProps {
   selectedDate: Date
   onDateChange: (date: Date) => void
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  activeCategories: string[]
+  setActiveCategories: React.Dispatch<React.SetStateAction<string[]>>
 }
 
-export default function MiniCalendar({ selectedDate, onDateChange }: MiniCalendarProps) {
+export default function MiniCalendar({ 
+  selectedDate, 
+  onDateChange,
+  searchQuery,
+  setSearchQuery,
+  activeCategories,
+  setActiveCategories
+}: MiniCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(startOfMonth(selectedDate))
 
-  // Sync with selectedDate when it changes from outside
   useEffect(() => {
     setCurrentMonth(startOfMonth(selectedDate))
   }, [selectedDate])
@@ -48,6 +57,19 @@ export default function MiniCalendar({ selectedDate, onDateChange }: MiniCalenda
   })
 
   const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
+  const toggleCategory = (id: string) => {
+    setActiveCategories(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
+
+  const categoryOptions = [
+    { id: 'event', label: '会議', color: 'bg-terracotta' },
+    { id: 'success', label: '来客 / 外出', color: 'bg-green-600' },
+    { id: 'warning', label: '締切', color: 'bg-amber-600' },
+    { id: 'info', label: 'イベント', color: 'bg-blue-600' },
+  ]
 
   return (
     <div className="space-y-6">
@@ -111,24 +133,26 @@ export default function MiniCalendar({ selectedDate, onDateChange }: MiniCalenda
         <input 
           type="text" 
           placeholder="Filter events"
+          value={searchQuery || ''}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full bg-ivory/30 border border-cream rounded-xl pl-9 pr-4 py-2.5 text-[13px] text-near-black placeholder:text-stone/40 focus:outline-none focus:ring-2 focus:ring-terracotta/10 transition-all"
         />
       </div>
 
       {/* Filter Groups */}
       <div className="space-y-4 pt-2 px-1">
-        {[
-          { label: 'Bryntum team', color: 'bg-cyan-500' },
-          { label: 'Hotel Park', color: 'bg-amber-500' },
-          { label: 'Mats Bryntse', color: 'bg-rose-500' },
-        ].map((filter, i) => (
-          <label key={i} className="flex items-center gap-3 cursor-pointer group">
+        <h4 className="text-[10px] font-bold text-stone uppercase tracking-[0.2em] mb-2">My Calendars</h4>
+        {categoryOptions.map((filter) => (
+          <label key={filter.id} className="flex items-center gap-3 cursor-pointer group">
             <div className="relative flex items-center justify-center">
               <input 
                 type="checkbox" 
-                defaultChecked 
-                className="peer h-5 w-5 appearance-none rounded-md border border-cream bg-white checked:bg-cyan-500 checked:border-transparent transition-all"
-                style={{ backgroundColor: filter.color === 'bg-cyan-500' ? '' : undefined }} // Overridden by tailwind classes usually
+                checked={activeCategories.includes(filter.id)}
+                onChange={() => toggleCategory(filter.id)}
+                className={cn(
+                  "peer h-5 w-5 appearance-none rounded-md border border-cream transition-all",
+                  activeCategories.includes(filter.id) ? filter.color : "bg-white"
+                )}
               />
               <svg className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
                 <polyline points="20 6 9 17 4 12" />

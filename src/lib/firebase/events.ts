@@ -69,6 +69,24 @@ export const subscribeToEvents = (callback: (events: CalendarEvent[]) => void) =
 };
 
 /**
+ * Cập nhật sự kiện hiện có
+ */
+export const updateCalendarEvent = async (id: string, updates: Partial<Omit<CalendarEvent, "id" | "createdAt">>) => {
+  try {
+    const eventRef = doc(db, EVENTS_COLLECTION, id);
+    const dataToUpdate: any = { ...updates };
+    
+    if (updates.start) dataToUpdate.start = Timestamp.fromDate(updates.start);
+    if (updates.end) dataToUpdate.end = Timestamp.fromDate(updates.end);
+
+    await updateDoc(eventRef, dataToUpdate);
+  } catch (error) {
+    console.error("Error updating event: ", error);
+    throw error;
+  }
+};
+
+/**
  * Xóa sự kiện
  */
 export const deleteCalendarEvent = async (id: string) => {

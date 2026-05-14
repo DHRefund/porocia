@@ -1,18 +1,18 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import PorociaCalendar from "@/components/calendar/PorociaCalendar";
 import MiniCalendar from "@/components/calendar/MiniCalendar";
 import AddEventModal from "@/components/calendar/AddEventModal";
 import EventDetailModal from "@/components/calendar/EventDetailModal";
 import { Calendar as CalendarIcon, Plus, Menu, Loader2 } from "lucide-react";
 import { Views, View } from 'react-big-calendar';
-import { subscribeToEvents, addCalendarEvent, deleteCalendarEvent, CalendarEvent } from "@/lib/firebase/events";
+import { subscribeToEvents, addCalendarEvent, deleteCalendarEvent, updateCalendarEvent, CalendarEvent } from "@/lib/firebase/events";
 import { toast } from 'sonner';
 import { useAuth } from "@/components/AuthProvider";
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 13))
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<View>(Views.MONTH)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   
@@ -23,11 +23,16 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategories, setActiveCategories] = useState<string[]>(['event', 'success', 'warning', 'info'])
+  
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date, end: Date } | undefined>()
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
   // Subscribe to Firestore Events
   useEffect(() => {
@@ -39,7 +44,17 @@ export default function CalendarPage() {
     return () => unsubscribe()
   }, [])
 
+  // Logic lọc sự kiện thời gian thực
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => {
+      const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesCategory = activeCategories.includes(event.type)
+      return matchesSearch && matchesCategory
+    })
+  }, [events, searchQuery, activeCategories])
+
   const handleSelectSlot = (slot: { start: Date, end: Date }) => {
+    setEditingEvent(null)
     setSelectedSlot(slot)
     setIsAddModalOpen(true)
   }
@@ -47,6 +62,12 @@ export default function CalendarPage() {
   const handleSelectEvent = (event: CalendarEvent) => {
     setSelectedEvent(event)
     setIsDetailModalOpen(true)
+  }
+
+  const handleOpenEdit = (event: CalendarEvent) => {
+    setIsDetailModalOpen(false)
+    setEditingEvent(event)
+    setIsAddModalOpen(true)
   }
 
   const handleAddEvent = async (newEventData: any) => {
@@ -69,6 +90,14 @@ export default function CalendarPage() {
     }
   }
 
+  const handleUpdateEvent = async (id: string, updates: any) => {
+    try {
+      await updateCalendarEvent(id, updates)
+    } catch (error) {
+      toast.error("更新に失敗しました")
+    }
+  }
+
   const handleDeleteEvent = async (id: string) => {
     try {
       await deleteCalendarEvent(id)
@@ -79,6 +108,7 @@ export default function CalendarPage() {
   }
 
   const handleOpenAddModal = () => {
+    setEditingEvent(null)
     setSelectedSlot(undefined)
     setIsAddModalOpen(true)
   }
@@ -86,8 +116,8 @@ export default function CalendarPage() {
   return (
     <div className="flex h-[calc(100vh-5rem)] flex-col overflow-hidden bg-parchment text-near-black">
       
-      {/* ── Top Header (Slim) ── */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-cream bg-background px-6 py-2.5 lg:px-10">
+      {/* ── Top Header ── */}
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-cream/50 bg-background px-6 py-2.5 lg:px-10">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -109,7 +139,7 @@ export default function CalendarPage() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setCurrentDate(new Date())}
-            className="px-4 py-1.5 border border-cream rounded-xl text-xs font-bold text-stone hover:bg-cream transition-colors"
+            className="px-4 py-1.5 border border-cream rounded-xl text-[13px] font-bold text-stone hover:bg-cream transition-colors"
           >
             今日
           </button>
@@ -124,7 +154,7 @@ export default function CalendarPage() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* ── Left Sidebar ── */}
+        {/* Sidebar */}
         <aside 
           className={`
             w-72 border-r border-cream bg-white/50 backdrop-blur-sm p-6 overflow-y-auto transition-all duration-300
@@ -133,14 +163,18 @@ export default function CalendarPage() {
         >
           <MiniCalendar 
             selectedDate={currentDate} 
-            onDateChange={setCurrentDate} 
+            onDateChange={setCurrentDate}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            activeCategories={activeCategories}
+            setActiveCategories={setActiveCategories}
           />
         </aside>
 
-        {/* ── Main Calendar Content ── */}
+        {/* Main Content */}
         <main className="flex-1 min-w-0 p-4 lg:p-6 bg-parchment/30 overflow-hidden">
           <PorociaCalendar 
-            events={events}
+            events={filteredEvents}
             date={currentDate}
             view={view}
             onView={setView}
@@ -151,12 +185,14 @@ export default function CalendarPage() {
         </main>
       </div>
 
-      {/* ── Modals ── */}
+      {/* Modals */}
       <AddEventModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddEvent}
+        onUpdate={handleUpdateEvent}
         selectedSlot={selectedSlot}
+        editingEvent={editingEvent}
       />
 
       <EventDetailModal
@@ -164,6 +200,7 @@ export default function CalendarPage() {
         onClose={() => setIsDetailModalOpen(false)}
         event={selectedEvent}
         onDelete={handleDeleteEvent}
+        onEdit={handleOpenEdit}
       />
     </div>
   );

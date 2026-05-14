@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { X, Clock, User, Tag, Trash2, Calendar as CalendarIcon } from 'lucide-react'
+import { X, Clock, User, Tag, Trash2, Calendar as CalendarIcon, Pencil } from 'lucide-react'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { CalendarEvent } from '@/lib/firebase/events'
@@ -13,9 +13,10 @@ interface EventDetailModalProps {
   onClose: () => void
   event: CalendarEvent | null
   onDelete: (id: string) => void
+  onEdit: (event: CalendarEvent) => void
 }
 
-export default function EventDetailModal({ isOpen, onClose, event, onDelete }: EventDetailModalProps) {
+export default function EventDetailModal({ isOpen, onClose, event, onDelete, onEdit }: EventDetailModalProps) {
   const { user, profile } = useAuth()
   const [isConfirmOpen, setIsConfirmOpen] = React.useState(false)
 
@@ -105,19 +106,31 @@ export default function EventDetailModal({ isOpen, onClose, event, onDelete }: E
 
           {/* Footer Actions */}
           <div className="px-8 py-6 border-t border-cream bg-ivory/20 flex justify-between items-center">
-            {canDelete ? (
-              <button 
-                onClick={() => setIsConfirmOpen(true)}
-                className="flex items-center gap-2 text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl transition-all active:scale-95 text-xs font-bold"
-              >
-                <Trash2 size={14} />
-                イベントを削除
-              </button>
-            ) : (
-              <div className="text-[10px] text-stone italic">
-                ※このイベントを削除する権限がありません
-              </div>
-            )}
+            <div className="flex gap-2">
+              {canDelete && (
+                <>
+                  <button 
+                    onClick={() => setIsConfirmOpen(true)}
+                    className="flex items-center gap-2 text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl transition-all active:scale-95 text-xs font-bold"
+                  >
+                    <Trash2 size={14} />
+                    削除
+                  </button>
+                  <button 
+                    onClick={() => onEdit(event)}
+                    className="flex items-center gap-2 text-stone hover:bg-cream px-4 py-2 rounded-xl transition-all active:scale-95 text-xs font-bold"
+                  >
+                    <Pencil size={14} />
+                    編集
+                  </button>
+                </>
+              )}
+              {!canDelete && (
+                <div className="text-[10px] text-stone italic">
+                  ※このイベントを編集する権限がありません
+                </div>
+              )}
+            </div>
             
             <button 
               onClick={onClose}
