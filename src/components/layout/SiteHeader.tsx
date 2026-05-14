@@ -12,6 +12,7 @@ import { toast } from "sonner";
 const navItems = [
   { label: "ホーム", href: "/" },
   { label: "チャット", href: "/chat" },
+  { label: "カレンダー", href: "/calendar" },
   { label: "メンバー", href: "/people" },
   { label: "ナレッジ", href: "/knowledge" },
   { label: "お知らせ", href: "/announcements" },
