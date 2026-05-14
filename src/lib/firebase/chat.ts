@@ -111,9 +111,10 @@ export async function sendMessage(params: {
   senderPhotoURL?: string;
   replyTo?: {
     messageId: string;
+    senderId: string;
     senderName: string;
     senderPhotoURL?: string;
-    text: string;
+    text: string; 
   };
 }) {
   const { channelId, text, senderId, senderEmail, senderName, senderPhotoURL } = params;
