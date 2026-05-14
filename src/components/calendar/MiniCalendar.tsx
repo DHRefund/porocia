@@ -132,7 +132,7 @@ export default function MiniCalendar({
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone/50" />
         <input 
           type="text" 
-          placeholder="Filter events"
+          placeholder="イベントを検索"
           value={searchQuery || ''}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full bg-ivory/30 border border-cream rounded-xl pl-9 pr-4 py-2.5 text-[13px] text-near-black placeholder:text-stone/40 focus:outline-none focus:ring-2 focus:ring-terracotta/10 transition-all"
@@ -141,7 +141,7 @@ export default function MiniCalendar({
 
       {/* Filter Groups */}
       <div className="space-y-4 pt-2 px-1">
-        <h4 className="text-[10px] font-bold text-stone uppercase tracking-[0.2em] mb-2">My Calendars</h4>
+        <h4 className="text-[10px] font-bold text-stone uppercase tracking-[0.2em] mb-2">カレンダー一覧</h4>
         {categoryOptions.map((filter) => (
           <label key={filter.id} className="flex items-center gap-3 cursor-pointer group">
             <div className="relative flex items-center justify-center">

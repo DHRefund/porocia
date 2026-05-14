@@ -76,7 +76,11 @@ export default function PorociaCalendar({
           week: "週",
           day: "日",
           agenda: "予定リスト",
-          noEventsInRange: "この期間内に予定はありません。",
+          date: "日付",
+          time: "時刻",
+          event: "イベント",
+          noEventsInRange: "この期間にイベントはありません。",
+          showMore: (total) => `+ 他 ${total} 件`,
         }}
       />
     </div>

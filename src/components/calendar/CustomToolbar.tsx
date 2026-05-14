@@ -18,10 +18,10 @@ export default function CustomToolbar({
   const goToToday = () => onNavigate('TODAY')
 
   const viewOptions = [
-    { id: Views.DAY, label: 'Day' },
-    { id: Views.WEEK, label: 'Week' },
-    { id: Views.MONTH, label: 'Month' },
-    { id: Views.AGENDA, label: 'Agenda' },
+    { id: Views.DAY, label: '日' },
+    { id: Views.WEEK, label: '週' },
+    { id: Views.MONTH, label: '月' },
+    { id: Views.AGENDA, label: '予定' },
   ]
 
   return (
@@ -38,7 +38,7 @@ export default function CustomToolbar({
           className="flex items-center gap-2 px-4 py-1.5 hover:bg-cream rounded-lg text-[13px] font-bold text-near-black border border-cream/80 transition-all active:scale-95 shadow-sm"
         >
           <CalendarIcon size={14} className="text-stone" />
-          Today
+          今日
         </button>
 
         <div className="flex items-center gap-2">
@@ -51,7 +51,7 @@ export default function CustomToolbar({
         </div>
 
         <h2 className="text-xl font-medium text-near-black ml-2 tracking-tight">
-          {format(date, 'MMMM yyyy')}
+          {format(date, 'yyyy年 M月', { locale: ja })}
         </h2>
       </div>
 
