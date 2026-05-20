@@ -331,3 +331,30 @@ export async function toggleMessageReaction(params: {
     }, { merge: true });
   }
 }
+
+/**
+ * Đảm bảo tồn tại một Channel nhắn tin trực tiếp (DM) giữa hai người dùng
+ */
+export async function ensureDirectChannel(
+  userA: { uid: string; displayName: string },
+  userB: { uid: string; displayName: string }
+): Promise<string> {
+  const uids = [userA.uid, userB.uid].sort();
+  const channelId = `dm_${uids[0]}_${uids[1]}`;
+  
+  const channelRef = doc(db, "channels", channelId);
+  const snap = await getDoc(channelRef);
+  
+  if (!snap.exists()) {
+    await setDoc(channelRef, {
+      name: `${userA.displayName} & ${userB.displayName}`,
+      description: `ダイレクトメッセージ (${userA.displayName} & ${userB.displayName})`,
+      createdAt: serverTimestamp(),
+      createdBy: userA.uid,
+      isArchived: false,
+      members: [userA.uid, userB.uid],
+      unreadCount: {},
+    });
+  }
+  return channelId;
+}

@@ -3,6 +3,7 @@
 import { use } from "react";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { useChannels } from "@/hooks/useChannels";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function ChannelPage({ 
   params 
@@ -11,6 +12,7 @@ export default function ChannelPage({
 }) {
   const { channelId } = use(params);
   const { channels, loading } = useChannels();
+  const { user, profile } = useAuth();
 
   if (loading) {
     return <ChatPageSkeleton />;
@@ -19,23 +21,35 @@ export default function ChannelPage({
   const channel = channels.find(c => c.id === channelId);
 
   if (!channel) {
-  return (
-    <div className="flex h-full items-center justify-center text-stone">
-      Channel not found
-    </div>
-  );
-}
+    return (
+      <div className="flex h-full items-center justify-center text-stone">
+        Channel not found
+      </div>
+    );
+  }
+
+  const isDM = channel.id.startsWith("dm_");
+  const getChannelDisplayName = () => {
+    if (!isDM) return channel.name;
+    const parts = channel.name.split(" & ");
+    if (parts.length === 2) {
+      const myName = profile?.displayName || user?.email?.split("@")[0] || "";
+      if (parts[0] === myName) return parts[1];
+      if (parts[1] === myName) return parts[0];
+    }
+    return channel.name;
+  };
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
       {/* Header */}
       <div className="flex h-16 items-center border-b border-warm/20 px-6 bg-background/95 backdrop-blur-sm z-20">
         <h3 className="text-sm font-bold tracking-widest uppercase text-near-black flex items-center gap-2">
-          <span className="text-terracotta opacity-50">#</span>
-          {channel.name}
+          <span className="text-terracotta opacity-50">{isDM ? "@" : "#"}</span>
+          {getChannelDisplayName()}
         </h3>
         <p className="ml-4 text-[11px] text-stone truncate max-w-md hidden md:block">
-          {channel.description}
+          {isDM ? "ダイレクトメッセージ" : channel.description}
         </p>
       </div>
 

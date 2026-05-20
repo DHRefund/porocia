@@ -60,11 +60,15 @@ export default async function AdminDashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: "新着お知らせ", value: "12", icon: Megaphone, color: "bg-terracotta" },
-          { label: "今後のイベント", value: "05", icon: Calendar, color: "bg-olive" },
-          { label: "総ユーザー数", value: userCount === -1 ? "システムエラー" : userCount.toString(), icon: Users, color: "bg-stone" },
+          { label: "新着お知らせ", value: "12", icon: Megaphone, color: "bg-terracotta", href: "/dashboard/announcements" },
+          { label: "今後のイベント", value: "05", icon: Calendar, color: "bg-olive", href: "/calendar" },
+          { label: "総ユーザー数", value: userCount === -1 ? "システムエラー" : userCount.toString(), icon: Users, color: "bg-stone", href: "/dashboard/members" },
         ].map((stat, i) => (
-          <div key={i} className="bg-white border border-cream p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <Link 
+            key={i} 
+            href={stat.href} 
+            className="block bg-white border border-cream p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-cream/80 active:scale-[0.98] transition-all duration-200"
+          >
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-[13px] font-bold text-stone uppercase tracking-wider">{stat.label}</p>
@@ -74,7 +78,7 @@ export default async function AdminDashboardPage() {
                 <stat.icon className="w-5 h-5 text-ivory" />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

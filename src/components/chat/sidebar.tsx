@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useChannels } from "@/hooks/useChannels";
 import { useAuth } from "@/components/AuthProvider";
-import { Hash } from "lucide-react";
+import { Hash, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { channels, loading } = useChannels();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   if (loading) {
     return (
@@ -43,6 +43,20 @@ export function Sidebar() {
               user?.uid ? (channel.unreadCount?.[user.uid] ?? 0) : 0;
             const hasUnread = unreadCount > 0;
 
+            const isDM = channel.id.startsWith("dm_");
+            const Icon = isDM ? User : Hash;
+
+            const getChannelDisplayName = () => {
+              if (!isDM) return channel.name;
+              const parts = channel.name.split(" & ");
+              if (parts.length === 2) {
+                const myName = profile?.displayName || user?.email?.split("@")[0] || "";
+                if (parts[0] === myName) return parts[1];
+                if (parts[1] === myName) return parts[0];
+              }
+              return channel.name;
+            };
+
             return (
               <Link
                 key={channel.id}
@@ -54,10 +68,10 @@ export function Sidebar() {
                     : "text-stone hover:bg-cream hover:text-near-black"
                 )}
               >
-                <Hash className="w-4 h-4 opacity-70 flex-shrink-0" />
+                <Icon className="w-4 h-4 opacity-70 flex-shrink-0" />
 
                 {/* Channel name + unread badge */}
-                <span className="flex-1 truncate">{channel.name}</span>
+                <span className="flex-1 truncate">{getChannelDisplayName()}</span>
 
                 {hasUnread && (
                   <span className={cn(
