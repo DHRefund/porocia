@@ -81,6 +81,20 @@ export async function ensureChannel(channelId: string, name: string, uid: string
   }
 }
 
+export async function createChannel(name: string, description: string, uid: string): Promise<string> {
+  const channelsRef = collection(db, "channels");
+  const docRef = await addDoc(channelsRef, {
+    name: name.trim(),
+    description: description.trim() || `Channel ${name}`,
+    createdAt: serverTimestamp(),
+    createdBy: uid,
+    isArchived: false,
+    members: [uid],
+    unreadCount: {},
+  });
+  return docRef.id;
+}
+
 export async function getChannels() {
   const channelsRef = collection(db, "channels");
   const q = query(channelsRef, orderBy("createdAt", "asc"));
@@ -357,4 +371,25 @@ export async function ensureDirectChannel(
     });
   }
   return channelId;
+}
+
+/**
+ * Thêm một thành viên vào Kênh chat
+ */
+export async function addChannelMember(channelId: string, memberUid: string) {
+  const channelRef = doc(db, "channels", channelId);
+  await updateDoc(channelRef, {
+    members: arrayUnion(memberUid)
+  });
+}
+
+/**
+ * Xóa một thành viên khỏi Kênh chat
+ */
+export async function removeChannelMember(channelId: string, memberUid: string) {
+  const channelRef = doc(db, "channels", channelId);
+  await updateDoc(channelRef, {
+    members: arrayRemove(memberUid),
+    [`unreadCount.${memberUid}`]: deleteField()
+  });
 }
