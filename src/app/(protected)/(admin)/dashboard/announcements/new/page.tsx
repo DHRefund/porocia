@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { createAnnouncement } from "@/lib/firebase/announcements";
+import { addCalendarEvent } from "@/lib/firebase/events";
 import { 
   ArrowLeft, 
   Save, 
@@ -27,6 +28,11 @@ export default function NewAnnouncementPage() {
   const [content, setContent] = useState("");
   const [type, setType] = useState<"info" | "warning" | "success" | "event">("info");
   const [isPinned, setIsPinned] = useState(false);
+  
+  // Calendar Sync State
+  const [addToCalendar, setAddToCalendar] = useState(true);
+  const [eventStart, setEventStart] = useState("");
+  const [eventEnd, setEventEnd] = useState("");
   
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -79,7 +85,14 @@ export default function NewAnnouncementPage() {
     }
     if (!user) {
       toast.error("ログインが必要です", {
-        description: "操作を続けるにはログインしてください。",
+        description: "操作を続けるするにはログインしてください。",
+      });
+      return;
+    }
+
+    if (type === "event" && addToCalendar && (!eventStart || !eventEnd)) {
+      toast.warning("イベント日時を入力してください", {
+        description: "カレンダーに追加するには、開始日時と終了日時を指定する必要があります。",
       });
       return;
     }
@@ -93,6 +106,25 @@ export default function NewAnnouncementPage() {
         setUploadingImage(false);
       }
 
+      // Sync with Calendar if it's an event announcement
+      let calendarEventId = null;
+      if (type === "event" && addToCalendar && eventStart && eventEnd) {
+        try {
+          calendarEventId = await addCalendarEvent({
+            title: `[お知らせ] ${title}`,
+            start: new Date(eventStart),
+            end: new Date(eventEnd),
+            type: "info", // Blue theme for synced announcements
+            scope: "company",
+            createdBy: user.uid,
+            creatorName: profile?.displayName || user.email?.split("@")[0] || "Admin",
+          });
+        } catch (calError) {
+          console.error("Failed to add calendar event:", calError);
+          toast.warning("カレンダー登録に失敗しました（お知らせは投稿されます）");
+        }
+      }
+
       await createAnnouncement({
         title,
         content,
@@ -101,6 +133,7 @@ export default function NewAnnouncementPage() {
         imageURL,
         authorId: user.uid,
         authorName: profile?.displayName || user.email?.split("@")[0] || "Admin",
+        calendarEventId,
       });
 
       // Clear form
@@ -110,6 +143,8 @@ export default function NewAnnouncementPage() {
       setIsPinned(false);
       setImage(null);
       setImagePreview(null);
+      setEventStart("");
+      setEventEnd("");
 
       toast.success(type === "event" ? "イベントを投稿しました" : "お知らせを投稿しました", {
         description: "メンバー全員に通知が送信されました。",
@@ -203,6 +238,49 @@ export default function NewAnnouncementPage() {
                 </label>
               </div>
             </div>
+
+            {/* Event Date Sync Options */}
+            {type === "event" && (
+              <div className="p-4 border border-cream rounded-xl bg-ivory/20 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 rounded border-cream text-terracotta focus:ring-terracotta"
+                    checked={addToCalendar}
+                    onChange={(e) => setAddToCalendar(e.target.checked)}
+                  />
+                  <div>
+                    <p className="font-bold text-near-black text-sm">カレンダーに自動追加</p>
+                    <p className="text-xs text-stone">このお知らせイベントを会社の全体カレンダーに登録します</p>
+                  </div>
+                </label>
+
+                {addToCalendar && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-cream/50 animate-in fade-in duration-200">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-stone uppercase tracking-wider">イベント開始日時</label>
+                      <input 
+                        type="datetime-local" 
+                        className="w-full px-4 py-2.5 bg-white border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 text-sm text-near-black"
+                        value={eventStart}
+                        onChange={(e) => setEventStart(e.target.value)}
+                        required={addToCalendar}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-stone uppercase tracking-wider">イベント終了日時</label>
+                      <input 
+                        type="datetime-local" 
+                        className="w-full px-4 py-2.5 bg-white border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 text-sm text-near-black"
+                        value={eventEnd}
+                        onChange={(e) => setEventEnd(e.target.value)}
+                        required={addToCalendar}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Content */}
             <div className="space-y-2">

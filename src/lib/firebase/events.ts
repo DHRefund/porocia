@@ -11,12 +11,17 @@ import {
 } from "firebase/firestore";
 import { db } from "./client";
 
+export type CalendarScope = 'company' | 'group' | 'personal';
+
 export interface CalendarEvent {
   id: string;
   title: string;
   start: Date;
   end: Date;
   type: string;
+  scope: CalendarScope;
+  groupId?: string;
+  groupName?: string;
   createdBy: string;
   creatorName: string;
   createdAt: Date;
@@ -59,6 +64,9 @@ export const subscribeToEvents = (callback: (events: CalendarEvent[]) => void) =
         start: data.start.toDate(),
         end: data.end.toDate(),
         type: data.type,
+        scope: (data.scope as CalendarScope) || 'company',
+        groupId: data.groupId || "",
+        groupName: data.groupName || "",
         createdBy: data.createdBy || "unknown",
         creatorName: data.creatorName || "Unknown User",
         createdAt: data.createdAt?.toDate() || new Date(),

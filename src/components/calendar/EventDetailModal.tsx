@@ -1,10 +1,10 @@
 "use client"
 
 import React from 'react'
-import { X, Clock, User, Tag, Trash2, Calendar as CalendarIcon, Pencil } from 'lucide-react'
+import { X, Clock, User, Tag, Trash2, Calendar as CalendarIcon, Pencil, Building2, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { CalendarEvent } from '@/lib/firebase/events'
+import { CalendarEvent, CalendarScope } from '@/lib/firebase/events'
 import { useAuth } from '@/components/AuthProvider'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
@@ -102,6 +102,20 @@ export default function EventDetailModal({ isOpen, onClose, event, onDelete, onE
                 </div>
               </div>
             </div>
+
+            {/* Scope */}
+            <div className="flex items-start gap-4">
+              <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone/5 text-stone">
+                {getScopeIcon(event.scope)}
+              </div>
+              <div>
+                <p className="text-xs font-bold text-stone uppercase tracking-widest mb-1.5">公開範囲</p>
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${getScopeBadgeClass(event.scope)}`}>
+                  {getScopeIcon(event.scope)}
+                  {event.scope === 'group' && event.groupName ? `グループ: ${event.groupName}` : getScopeLabel(event.scope)}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Footer Actions */}
@@ -169,5 +183,29 @@ function getTypeLabel(type: string) {
     case 'success': return '来客 / 外出'
     case 'info': return 'イベント'
     default: return '会議'
+  }
+}
+
+function getScopeLabel(scope: CalendarScope) {
+  switch (scope) {
+    case 'group': return 'グループ'
+    case 'personal': return '個人'
+    default: return '社内共有'
+  }
+}
+
+function getScopeIcon(scope: CalendarScope) {
+  switch (scope) {
+    case 'group': return <Users size={13} />
+    case 'personal': return <User size={13} />
+    default: return <Building2 size={13} />
+  }
+}
+
+function getScopeBadgeClass(scope: CalendarScope) {
+  switch (scope) {
+    case 'group': return 'text-blue-700 bg-blue-50 border-blue-200'
+    case 'personal': return 'text-green-700 bg-green-50 border-green-200'
+    default: return 'text-terracotta bg-terracotta/8 border-terracotta/30'
   }
 }

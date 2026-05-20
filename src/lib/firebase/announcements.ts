@@ -26,6 +26,7 @@ export interface Announcement {
   authorName: string;
   isPinned: boolean;
   reactions?: Record<string, string[]>; // { "heart": ["uid1", "uid2"], "like": [] }
+  calendarEventId?: string | null;
   createdAt: Timestamp;
   updatedAt?: Timestamp;
 }

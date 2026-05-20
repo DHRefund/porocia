@@ -7,7 +7,8 @@ import AddEventModal from "@/components/calendar/AddEventModal";
 import EventDetailModal from "@/components/calendar/EventDetailModal";
 import { Calendar as CalendarIcon, Plus, Menu, Loader2 } from "lucide-react";
 import { Views, View } from 'react-big-calendar';
-import { subscribeToEvents, addCalendarEvent, deleteCalendarEvent, updateCalendarEvent, CalendarEvent } from "@/lib/firebase/events";
+import { subscribeToEvents, addCalendarEvent, deleteCalendarEvent, updateCalendarEvent, CalendarEvent, CalendarScope } from "@/lib/firebase/events";
+import { getAllGroups, Group } from '@/lib/firebase/members'
 import { toast } from 'sonner';
 import { useAuth } from "@/components/AuthProvider";
 
@@ -21,11 +22,13 @@ export default function CalendarPage() {
   
   // State for Real Data
   const [events, setEvents] = useState<CalendarEvent[]>([])
+  const [userGroups, setUserGroups] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
   // Filter States
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategories, setActiveCategories] = useState<string[]>(['event', 'success', 'warning', 'info'])
+  const [activeScopes, setActiveScopes] = useState<CalendarScope[]>(['company', 'group', 'personal'])
   
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -44,14 +47,34 @@ export default function CalendarPage() {
     return () => unsubscribe()
   }, [])
 
+  // Fetch groups user belongs to
+  useEffect(() => {
+    if (user) {
+      getAllGroups().then((allGroups) => {
+        setUserGroups(allGroups)
+      }).catch(err => console.error("Error loading groups in calendar page:", err))
+    }
+  }, [user])
+
   // Logic lọc sự kiện thời gian thực
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = activeCategories.includes(event.type)
-      return matchesSearch && matchesCategory
+      const matchesScope = activeScopes.includes(event.scope || 'company')
+      
+      // Ẩn sự kiện cá nhân của người khác
+      const isPersonalVisible = event.scope !== 'personal' || event.createdBy === user?.uid
+      
+      // Ẩn sự kiện group nếu user không phải thành viên của group đó (hoặc không phải admin)
+      const isGroupVisible = event.scope !== 'group' || 
+        profile?.role === 'admin' ||
+        !event.groupId ||
+        userGroups.some(g => g.id === event.groupId && g.members.includes(user?.uid || ''))
+
+      return matchesSearch && matchesCategory && matchesScope && isPersonalVisible && isGroupVisible
     })
-  }, [events, searchQuery, activeCategories])
+  }, [events, searchQuery, activeCategories, activeScopes, user?.uid, profile?.role, userGroups])
 
   const handleSelectSlot = (slot: { start: Date, end: Date }) => {
     setEditingEvent(null)
@@ -82,6 +105,9 @@ export default function CalendarPage() {
         start: newEventData.start,
         end: newEventData.end,
         type: newEventData.type,
+        scope: newEventData.scope || 'company',
+        groupId: newEventData.groupId || '',
+        groupName: newEventData.groupName || '',
         createdBy: user.uid,
         creatorName: profile?.displayName || user.displayName || "Unknown User",
       })
@@ -161,13 +187,15 @@ export default function CalendarPage() {
             ${isSidebarOpen ? 'ml-0' : '-ml-72 opacity-0'}
           `}
         >
-          <MiniCalendar 
-            selectedDate={currentDate} 
+          <MiniCalendar
+            selectedDate={currentDate}
             onDateChange={setCurrentDate}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             activeCategories={activeCategories}
             setActiveCategories={setActiveCategories}
+            activeScopes={activeScopes}
+            setActiveScopes={setActiveScopes}
           />
         </aside>
 

@@ -1,22 +1,23 @@
 "use client"
 
 import React, { useEffect } from 'react'
-import { 
-  format, 
-  addMonths, 
-  subMonths, 
+import {
+  format,
+  addMonths,
+  subMonths,
   addYears,
   subYears,
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  isSameMonth, 
-  isSameDay, 
-  eachDayOfInterval 
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
+  eachDayOfInterval
 } from 'date-fns'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Building2, Users, User, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CalendarScope } from '@/lib/firebase/events'
 
 interface MiniCalendarProps {
   selectedDate: Date
@@ -25,15 +26,62 @@ interface MiniCalendarProps {
   setSearchQuery: (query: string) => void
   activeCategories: string[]
   setActiveCategories: React.Dispatch<React.SetStateAction<string[]>>
+  activeScopes: CalendarScope[]
+  setActiveScopes: React.Dispatch<React.SetStateAction<CalendarScope[]>>
 }
 
-export default function MiniCalendar({ 
-  selectedDate, 
+const CATEGORY_OPTIONS = [
+  { id: 'event', label: '会議', color: 'bg-terracotta' },
+  { id: 'success', label: '来客 / 外出', color: 'bg-green-600' },
+  { id: 'warning', label: '締切', color: 'bg-amber-600' },
+  { id: 'info', label: 'イベント', color: 'bg-blue-600' },
+]
+
+interface ScopeOption {
+  id: CalendarScope
+  label: string
+  subLabel: string
+  icon: React.ReactNode
+  activeColor: string
+  activeBg: string
+}
+
+const SCOPE_OPTIONS: ScopeOption[] = [
+  {
+    id: 'company',
+    label: '社内共有',
+    subLabel: '全員が閲覧可能',
+    icon: <Building2 size={14} />,
+    activeColor: 'text-terracotta',
+    activeBg: 'bg-terracotta/8 border-terracotta/40',
+  },
+  {
+    id: 'group',
+    label: 'グループ',
+    subLabel: 'チームメンバーのみ',
+    icon: <Users size={14} />,
+    activeColor: 'text-blue-600',
+    activeBg: 'bg-blue-50 border-blue-200',
+  },
+  {
+    id: 'personal',
+    label: '個人',
+    subLabel: '自分のみ',
+    icon: <User size={14} />,
+    activeColor: 'text-green-700',
+    activeBg: 'bg-green-50 border-green-200',
+  },
+]
+
+export default function MiniCalendar({
+  selectedDate,
   onDateChange,
   searchQuery,
   setSearchQuery,
   activeCategories,
-  setActiveCategories
+  setActiveCategories,
+  activeScopes,
+  setActiveScopes,
 }: MiniCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(startOfMonth(selectedDate))
 
@@ -51,29 +99,25 @@ export default function MiniCalendar({
   const startDate = startOfWeek(monthStart)
   const endDate = endOfWeek(monthEnd)
 
-  const calendarDays = eachDayOfInterval({
-    start: startDate,
-    end: endDate,
-  })
+  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate })
 
   const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
   const toggleCategory = (id: string) => {
-    setActiveCategories(prev => 
+    setActiveCategories(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     )
   }
 
-  const categoryOptions = [
-    { id: 'event', label: '会議', color: 'bg-terracotta' },
-    { id: 'success', label: '来客 / 外出', color: 'bg-green-600' },
-    { id: 'warning', label: '締切', color: 'bg-amber-600' },
-    { id: 'info', label: 'イベント', color: 'bg-blue-600' },
-  ]
+  const toggleScope = (id: CalendarScope) => {
+    setActiveScopes(prev =>
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    )
+  }
 
   return (
     <div className="space-y-6">
-      {/* Calendar Header */}
+      {/* ── Calendar Header ── */}
       <div className="flex items-center justify-between px-1 mb-2">
         <div className="flex items-center gap-1">
           <button onClick={prevYear} className="p-1 hover:bg-cream rounded-md transition-colors text-stone/50">
@@ -83,7 +127,7 @@ export default function MiniCalendar({
             <ChevronLeft size={14} />
           </button>
         </div>
-        
+
         <h3 className="text-[13px] font-bold text-near-black">
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
@@ -98,7 +142,7 @@ export default function MiniCalendar({
         </div>
       </div>
 
-      {/* Days Grid */}
+      {/* ── Days Grid ── */}
       <div className="grid grid-cols-7 gap-y-1">
         {weekDays.map((day, i) => (
           <div key={i} className="text-[10px] font-bold text-stone/60 text-center py-1">
@@ -108,7 +152,7 @@ export default function MiniCalendar({
         {calendarDays.map((day, i) => {
           const isToday = isSameDay(day, new Date())
           const isSelected = isSameDay(day, selectedDate)
-          
+
           return (
             <button
               key={i}
@@ -127,11 +171,11 @@ export default function MiniCalendar({
         })}
       </div>
 
-      {/* Search Filter */}
+      {/* ── Search Filter ── */}
       <div className="relative pt-2">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone/50" />
-        <input 
-          type="text" 
+        <input
+          type="text"
           placeholder="イベントを検索"
           value={searchQuery || ''}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -139,14 +183,47 @@ export default function MiniCalendar({
         />
       </div>
 
-      {/* Filter Groups */}
-      <div className="space-y-4 pt-2 px-1">
-        <h4 className="text-[10px] font-bold text-stone uppercase tracking-[0.2em] mb-2">カレンダー一覧</h4>
-        {categoryOptions.map((filter) => (
+      {/* ── Calendar Scope Groups ── */}
+      <div className="space-y-2 pt-1">
+        <h4 className="text-[10px] font-bold text-stone uppercase tracking-[0.2em] px-1">カレンダー一覧</h4>
+        <div className="space-y-1.5">
+          {SCOPE_OPTIONS.map((option) => {
+            const isActive = activeScopes.includes(option.id)
+            return (
+              <button
+                key={option.id}
+                onClick={() => toggleScope(option.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-200 group",
+                  isActive ? option.activeBg : "border-transparent bg-transparent hover:bg-cream/60"
+                )}
+              >
+                <span className={cn("transition-colors", isActive ? option.activeColor : "text-stone/40")}>
+                  {option.icon}
+                </span>
+                <div className="flex-1 text-left min-w-0">
+                  <p className={cn("text-[13px] font-bold leading-none mb-0.5 truncate", isActive ? "text-near-black" : "text-stone/60")}>
+                    {option.label}
+                  </p>
+                  <p className="text-[10px] text-stone/40 leading-none truncate">{option.subLabel}</p>
+                </div>
+                <span className={cn("transition-colors flex-shrink-0", isActive ? "text-stone/40" : "text-stone/20")}>
+                  {isActive ? <Eye size={13} /> : <EyeOff size={13} />}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* ── Category Filter ── */}
+      <div className="space-y-3 pt-2 px-1">
+        <h4 className="text-[10px] font-bold text-stone uppercase tracking-[0.2em] mb-2">カテゴリ</h4>
+        {CATEGORY_OPTIONS.map((filter) => (
           <label key={filter.id} className="flex items-center gap-3 cursor-pointer group">
             <div className="relative flex items-center justify-center">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={activeCategories.includes(filter.id)}
                 onChange={() => toggleCategory(filter.id)}
                 className={cn(

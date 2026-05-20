@@ -33,6 +33,11 @@ Hệ thống được xây dựng trên nền tảng hiện đại, đảm bảo
 4.  **Bộ lọc & Tìm kiếm thông minh**:
     *   Lọc theo từ khóa (Search) thời gian thực.
     *   Lọc theo danh mục (Categories): 会議, 来客 / 外出, 締切, イベント.
+6.  **Hệ thống Phạm vi Lịch (Calendar Scope)** — *(Đã hoàn thành)*:
+    *   Mỗi sự kiện có field `scope`: `company` | `group` | `personal`.
+    *   **社内共有**: Tất cả mọi người đều thấy. Dành cho sự kiện toàn công ty.
+    *   **グループ**: Đã hoàn thiện liên kết phân quyền với hệ thống `/groups`. Sự kiện thuộc nhóm nào chỉ có thành viên của nhóm đó (hoặc Admin) nhìn thấy và quản lý.
+    *   **個人用**: Sự kiện **thực sự riêng tư** — bị ẩn ở tầng data với tất cả người dùng khác, chỉ người tạo mới thấy.
 5.  **UX/UI Tối ưu**:
     *   Tự động gom nhóm sự kiện (Popup) khi một ngày có quá nhiều sự kiện.
     *   Highlight ngày hiện tại (Today) đồng bộ giữa lịch chính và lịch mini.
@@ -45,11 +50,12 @@ Hệ thống được xây dựng trên nền tảng hiện đại, đảm bảo
 Để nâng tầm module Lịch này lên mức "Enterprise", các tính năng sau sẽ được ưu tiên phát triển:
 
 1.  **Kéo & Thả (Drag and Drop)**: Cho phép người dùng thay đổi thời gian sự kiện bằng cách kéo thả trực tiếp trên lưới lịch.
-2.  **Đồng bộ Thông báo (Announcements Sync)**: Tự động đưa các thông báo có thời hạn từ hệ thống lên lịch chung.
+2.  **Đồng bộ Thông báo (Announcements Sync)**: *(Đã hoàn thành — Tự động đồng bộ sự kiện từ bảng tin thông báo lên lịch chung)*.
 3.  **Nhắc nhở (Reminders)**: Tích hợp hệ thống thông báo đẩy (Push Notifications) hoặc Email khi sắp đến giờ sự kiện.
-4.  **Lịch cá nhân vs Lịch chung**: Phân tách luồng sự kiện cá nhân của mỗi User và sự kiện chung của toàn công ty.
-5.  **Tương tác nhóm**: Cho phép "Tag" hoặc mời người dùng khác tham gia vào một sự kiện cụ thể.
+4.  **Lịch cá nhân vs Lịch chung**: *(Đã implement — xem mục 6 ở trên)*.
+5.  **Hoàn thiện hệ thống グループ (Group Calendar)**: *(Đã hoàn thành — quản lý tại dashboard và phân quyền lịch theo group)*.
+6.  **Tương tác nhóm**: Cho phép "Tag" hoặc mời người dùng khác tham gia vào một sự kiện cụ thể.
 6.  **Chế độ Offline**: Hỗ trợ xem lịch ngay cả khi mất kết nối mạng (Sử dụng Firestore Offline Persistence).
 
 ---
-*Cập nhật lần cuối: 14/05/2026*
+*Cập nhật lần cuối: 20/05/2026*
