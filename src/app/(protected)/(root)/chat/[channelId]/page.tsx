@@ -81,7 +81,10 @@ export default function ChannelPage({
     );
   }
 
-  const isDM = channel.id.startsWith("dm_");
+  const type = channel.type || (channel.id.startsWith("dm_") ? "dm" : "public");
+  const isDM = type === "dm";
+  const isPrivate = type === "private";
+
   const getChannelDisplayName = () => {
     if (!isDM) return channel.name;
     const parts = channel.name.split(" & ");
@@ -161,11 +164,18 @@ export default function ChannelPage({
       <div className="flex h-16 items-center justify-between border-b border-warm/20 px-6 bg-background/95 backdrop-blur-sm z-20 shrink-0">
         <div className="flex items-center min-w-0">
           <h3 className="text-sm font-bold tracking-widest uppercase text-near-black flex items-center gap-2 truncate">
-            <span className="text-terracotta opacity-50">{isDM ? "@" : "#"}</span>
+            <span className="text-terracotta opacity-50">
+              {isDM ? "@" : isPrivate ? "🔒" : "#"}
+            </span>
             {getChannelDisplayName()}
           </h3>
           <p className="ml-4 text-[11px] text-stone truncate max-w-md hidden md:block">
-            {isDM ? "ダイレクトメッセージ" : channel.description}
+            {isDM 
+              ? "ダイレクトメッセージ" 
+              : isPrivate 
+                ? `プライベートチャンネル — ${channel.description}` 
+                : channel.description
+            }
           </p>
         </div>
 

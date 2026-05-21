@@ -8,6 +8,7 @@ import { uploadAvatar, updateUserProfile } from "@/lib/firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Shield, User } from "lucide-react";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -34,8 +35,8 @@ export default function ProfilePage() {
           setBio(data.bio || "");
         }
       } catch (e) {
-        toast.error("Chưa tải được hồ sơ", {
-          description: "Vui lòng thử lại sau.",
+        toast.error("プロフィールの読み込みに失敗しました", {
+          description: "しばらくしてから再度お試しください。",
         });
       } finally {
         setLoading(false);
@@ -54,11 +55,11 @@ export default function ProfilePage() {
       });
       setProfile((prev: any) => ({ ...prev, displayName, bio }));
       setIsEditing(false);
-      toast.success("Đã cập nhật hồ sơ!", {
-        description: "Profile của bạn đã được thay đổi thành công.",
+      toast.success("プロフィールを更新しました", {
+        description: "プロフィールが正常に更新されました。",
       });
     } catch (e) {
-      toast.error("Lỗi khi lưu hồ sơ");
+      toast.error("プロフィールの保存に失敗しました");
     } finally {
       setSaving(false);
     }
@@ -68,9 +69,10 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Giới hạn dung lượng 2MB
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ảnh quá lớn", { description: "Vui lòng chọn ảnh dưới 2MB." });
+      toast.error("画像サイズが大きすぎます", { 
+        description: "2MB 以下の画像を選択してください。" 
+      });
       return;
     }
 
@@ -79,10 +81,10 @@ export default function ProfilePage() {
       const url = await uploadAvatar(user.uid, file);
       await updateUserProfile(user.uid, { photoURL: url });
       setProfile((prev: any) => ({ ...prev, photoURL: url }));
-      toast.success("Đã cập nhật ảnh đại diện!");
+      toast.success("アバター画像を更新しました");
     } catch (error) {
       console.error(error);
-      toast.error("Lỗi khi tải ảnh lên");
+      toast.error("画像のアップロードに失敗しました");
     } finally {
       setUploading(false);
     }
@@ -112,7 +114,7 @@ export default function ProfilePage() {
           <div className="relative group">
             <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#2a2a27] text-3xl font-semibold text-ivory shadow-inner">
               {profile?.photoURL ? (
-                <img src={profile.photoURL} alt="Avatar" className="h-full w-full object-cover" />
+                <img src={profile.photoURL} alt="アバター" className="h-full w-full object-cover" />
               ) : (
                 getInitials(profile?.displayName || user?.email)
               )}
@@ -132,49 +134,66 @@ export default function ProfilePage() {
           </div>
           <div>
             <h1 className="font-heading text-3xl font-bold tracking-[-0.02em] text-near-black">
-              Your Profile
+              マイプロフィール
             </h1>
             <p className="mt-1 text-[15px] text-olive">
-              Manage your personal information and preferences.
+              個人情報や設定を管理できます。
             </p>
           </div>
         </div>
 
         <div className="mt-10 space-y-8">
           
-          {/* Thông tin Email (Read only) */}
+          {/* Email (Read only) */}
           <div>
-            <label className="text-[13px] font-bold uppercase tracking-widest text-stone">
-              Tài khoản Email
+            <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone/80">
+              メールアドレス
             </label>
-            <div className="mt-2 text-[16px] font-medium text-dark">
-              {profile?.email || user?.email}
+            <div className="mt-2.5 flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f0ede6] text-stone">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-[15px] font-medium text-dark">
+                {profile?.email || user?.email}
+              </span>
             </div>
           </div>
 
-          {/* Vai trò */}
+          {/* Role - Improved styling */}
           <div>
-            <label className="text-[13px] font-bold uppercase tracking-widest text-stone">
-              Vai trò (Role)
+            <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone/80">
+              ロール
             </label>
-            <div className="mt-2 inline-flex items-center rounded-full bg-sand px-4 py-1 text-[13px] font-semibold uppercase tracking-wider text-dark">
-              {profile?.role || "Member"}
+            <div className="mt-2.5">
+              {profile?.role === "admin" ? (
+                <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-50 to-amber-50 px-4 py-1.5 text-[13px] font-semibold text-red-700 border border-red-200 shadow-sm">
+                  <Shield className="h-3.5 w-3.5 text-red-500" />
+                  管理者
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f0ede6] to-ivory px-4 py-1.5 text-[13px] font-semibold text-stone border border-cream shadow-sm">
+                  <User className="h-3.5 w-3.5 text-olive" />
+                  メンバー
+                </span>
+              )}
             </div>
           </div>
 
-          <hr className="border-t border-cream" />
+          <hr className="border-t border-cream/60" />
 
           {/* Editable Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-near-black">Thông tin hiển thị</h2>
+              <h2 className="text-xl font-semibold text-near-black">表示情報</h2>
               {!isEditing && (
                 <Button
                   onClick={() => setIsEditing(true)}
                   variant="outline"
-                  className="rounded-full border-warm bg-transparent text-dark hover:bg-sand"
+                  className="rounded-full border-warm bg-transparent text-dark hover:bg-sand transition-all duration-200"
                 >
-                  Edit Profile
+                  編集する
                 </Button>
               )}
             </div>
@@ -182,21 +201,21 @@ export default function ProfilePage() {
             {isEditing ? (
               <div className="space-y-5 rounded-2xl border border-warm bg-parchment/50 p-6">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-dark">Tên hiển thị</label>
+                  <label className="mb-2 block text-sm font-semibold text-dark">表示名</label>
                   <Input
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="h-12 rounded-xl border-cream bg-ivory focus-visible:ring-terracotta"
-                    placeholder="Nhập tên hiển thị..."
+                    className="h-12 rounded-xl border-cream bg-ivory focus-visible:ring-terracotta transition-all"
+                    placeholder="表示名を入力..."
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-dark">Tiểu sử (Bio)</label>
+                  <label className="mb-2 block text-sm font-semibold text-dark">自己紹介</label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="w-full rounded-xl border border-cream bg-ivory p-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-terracotta"
-                    placeholder="Viết một vài dòng về bản thân..."
+                    className="w-full rounded-xl border border-cream bg-ivory p-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-terracotta transition-all"
+                    placeholder="自分について簡単に記入してください..."
                     rows={3}
                   />
                 </div>
@@ -208,31 +227,38 @@ export default function ProfilePage() {
                       setBio(profile?.bio || "");
                     }}
                     variant="ghost"
-                    className="rounded-xl text-olive hover:bg-cream"
+                    className="rounded-xl text-olive hover:bg-cream transition-all"
                   >
-                    Hủy
+                    キャンセル
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={saving}
-                    className="rounded-xl bg-terracotta text-white hover:bg-[#bf5d3c]"
+                    className="rounded-xl bg-terracotta text-white hover:bg-[#bf5d3c] disabled:opacity-70 transition-all"
                   >
-                    {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                    {saving ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        保存中...
+                      </span>
+                    ) : (
+                      "変更を保存"
+                    )}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-6">
                 <div>
-                  <p className="text-[13px] font-bold uppercase tracking-widest text-stone">Tên hiển thị</p>
-                  <p className="mt-1 text-[16px] font-medium text-near-black">
-                    {profile?.displayName || "Chưa thiết lập"}
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone/80">表示名</p>
+                  <p className="mt-2.5 text-[16px] font-medium text-near-black">
+                    {profile?.displayName || "未設定"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-bold uppercase tracking-widest text-stone">Tiểu sử</p>
-                  <p className="mt-1 max-w-prose whitespace-pre-wrap text-[15px] leading-relaxed text-dark">
-                    {profile?.bio || "Chưa có tiểu sử."}
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone/80">自己紹介</p>
+                  <p className="mt-2.5 max-w-prose whitespace-pre-wrap text-[15px] leading-relaxed text-dark">
+                    {profile?.bio || "自己紹介はまだありません。"}
                   </p>
                 </div>
               </div>

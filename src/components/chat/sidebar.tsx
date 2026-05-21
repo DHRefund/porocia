@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useChannels } from "@/hooks/useChannels";
 import { useAuth } from "@/components/AuthProvider";
-import { Hash, User, Plus, X, Loader2 } from "lucide-react";
+import { Hash, User, Lock, Plus, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createChannel } from "@/lib/firebase/chat";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ export function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
   const [newChannelDesc, setNewChannelDesc] = useState("");
+  const [newChannelType, setNewChannelType] = useState<"public" | "private">("public");
   const [creating, setCreating] = useState(false);
 
   const handleCreateChannel = async (e: React.FormEvent) => {
@@ -38,13 +39,15 @@ export function Sidebar() {
       const channelId = await createChannel(
         newChannelName,
         newChannelDesc,
-        user.uid
+        user.uid,
+        newChannelType
       );
       toast.success(`チャンネル「#${newChannelName}」を作成しました！`);
       
       // Reset form & close modal
       setNewChannelName("");
       setNewChannelDesc("");
+      setNewChannelType("public");
       setIsModalOpen(false);
 
       // Auto navigate to new channel
@@ -99,8 +102,13 @@ export function Sidebar() {
                 user?.uid ? (channel.unreadCount?.[user.uid] ?? 0) : 0;
               const hasUnread = unreadCount > 0;
 
-              const isDM = channel.id.startsWith("dm_");
-              const Icon = isDM ? User : Hash;
+              const type = channel.type || (channel.id.startsWith("dm_") ? "dm" : "public");
+              const isDM = type === "dm";
+              const isPrivate = type === "private";
+
+              let Icon = Hash;
+              if (isDM) Icon = User;
+              else if (isPrivate) Icon = Lock;
 
               const getChannelDisplayName = () => {
                 if (!isDM) return channel.name;
@@ -168,6 +176,47 @@ export function Sidebar() {
             <h3 className="text-xl font-bold font-heading mb-6 text-near-black">新しいチャンネルを作成</h3>
             
             <form onSubmit={handleCreateChannel} className="space-y-5">
+              {/* Type Selection Option (Pills style) */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-stone uppercase tracking-widest">公開範囲</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setNewChannelType("public")}
+                    className={cn(
+                      "flex flex-col items-start p-3.5 rounded-2xl border text-left transition-all",
+                      newChannelType === "public"
+                        ? "border-terracotta bg-terracotta/[0.03] ring-1 ring-terracotta/10"
+                        : "border-cream hover:bg-cream/20 bg-ivory/10"
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-near-black">
+                      <Hash className="w-3.5 h-3.5 text-terracotta" />
+                      公開
+                    </div>
+                    <span className="text-[10px] text-stone mt-1.5 leading-normal">組織の全員が参加可能です。</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewChannelType("private")}
+                    className={cn(
+                      "flex flex-col items-start p-3.5 rounded-2xl border text-left transition-all",
+                      newChannelType === "private"
+                        ? "border-terracotta bg-terracotta/[0.03] ring-1 ring-terracotta/10"
+                        : "border-cream hover:bg-cream/20 bg-ivory/10"
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-near-black">
+                      <Lock className="w-3.5 h-3.5 text-terracotta" />
+                      プライベート
+                    </div>
+                    <span className="text-[10px] text-stone mt-1.5 leading-normal">招待されたメンバーのみ。</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Channel Name */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-stone uppercase tracking-widest">チャンネル名</label>
                 <div className="relative">
@@ -183,6 +232,7 @@ export function Sidebar() {
                 </div>
               </div>
 
+              {/* Channel Description */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-stone uppercase tracking-widest">説明（任意）</label>
                 <textarea
@@ -194,6 +244,7 @@ export function Sidebar() {
                 />
               </div>
 
+              {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-5 border-t border-cream/50">
                 <button
                   type="button"

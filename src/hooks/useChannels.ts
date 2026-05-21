@@ -17,9 +17,12 @@ export function useChannels(initialData: any[] = []) {
 
     const unsubscribe = listenChannels((data) => {
       const visibleChannels = data.filter((channel) => {
-        const isDM = channel.id.startsWith("dm_");
-        if (!isDM) return true; // Standard channels are public
-        return channel.members?.includes(user.uid) ?? false; // DM only for participants
+        const type = channel.type || (channel.id.startsWith("dm_") ? "dm" : "public");
+        
+        if (type === "public") return true; // Standard public channels are always visible
+        
+        // Private channels or DM: only visible to members
+        return channel.members?.includes(user.uid) ?? false;
       });
 
       setChannels(visibleChannels);

@@ -72,6 +72,7 @@ export async function ensureChannel(channelId: string, name: string, uid: string
     await setDoc(channelRef, {
       name,
       description: `Channel ${name}`,
+      type: "public",
       createdAt: serverTimestamp(),
       createdBy: uid,
       isArchived: false,
@@ -81,11 +82,17 @@ export async function ensureChannel(channelId: string, name: string, uid: string
   }
 }
 
-export async function createChannel(name: string, description: string, uid: string): Promise<string> {
+export async function createChannel(
+  name: string,
+  description: string,
+  uid: string,
+  type: "public" | "private" = "public"
+): Promise<string> {
   const channelsRef = collection(db, "channels");
   const docRef = await addDoc(channelsRef, {
     name: name.trim(),
     description: description.trim() || `Channel ${name}`,
+    type,
     createdAt: serverTimestamp(),
     createdBy: uid,
     isArchived: false,
@@ -363,6 +370,7 @@ export async function ensureDirectChannel(
     await setDoc(channelRef, {
       name: `${userA.displayName} & ${userB.displayName}`,
       description: `ダイレクトメッセージ (${userA.displayName} & ${userB.displayName})`,
+      type: "dm",
       createdAt: serverTimestamp(),
       createdBy: userA.uid,
       isArchived: false,
