@@ -218,7 +218,7 @@ export default function MembersDashboardPage() {
       {/* ── Top Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-near-black">メンバー & グ룹管理</h1>
+          <h1 className="text-3xl font-heading font-bold text-near-black">メンバー & グループ管理</h1>
           <p className="text-stone mt-1">一般メンバーのロール変更や所属グループの割り当て、新規グループの作成が行えます。</p>
         </div>
         {activeTab === "groups" && (

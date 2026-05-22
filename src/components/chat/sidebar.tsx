@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useChannels } from "@/hooks/useChannels";
 import { useAuth } from "@/components/AuthProvider";
+import { useUsersCache } from "@/hooks/useUsersCache";
 import { Hash, User, Lock, Plus, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createChannel } from "@/lib/firebase/chat";
@@ -15,6 +16,7 @@ export function Sidebar() {
   const router = useRouter();
   const { channels, loading } = useChannels();
   const { user, profile } = useAuth();
+  const { getUserName } = useUsersCache();
 
   // Create Channel Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,6 +114,16 @@ export function Sidebar() {
 
               const getChannelDisplayName = () => {
                 if (!isDM) return channel.name;
+
+                // Parse UID from channelId (format: dm_{uid1}_{uid2})
+                const match = channel.id.match(/^dm_(.+)_(.+)$/);
+                if (match) {
+                  const [_, uid1, uid2] = match;
+                  const otherUid = uid1 === user?.uid ? uid2 : uid1;
+                  return getUserName(otherUid);
+                }
+
+                // Fallback: parse from channel.name (old logic)
                 const parts = channel.name.split(" & ");
                 if (parts.length === 2) {
                   const myName = profile?.displayName || user?.email?.split("@")[0] || "";

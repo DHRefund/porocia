@@ -51,13 +51,13 @@ export function ChatInput({
         <div className="mx-6 flex items-center justify-between gap-4 rounded-xl bg-cream/40 px-4 py-2 border-l-4 border-terracotta animate-in slide-in-from-bottom-2 duration-200">
           <div className="flex-1 overflow-hidden">
             <p className="text-[10px] font-bold uppercase tracking-wider text-terracotta">
-              Replying to {replyingTo.senderName}
+              {replyingTo.senderName} さんに返信中
             </p>
             <p className="truncate text-xs text-stone italic">
               {replyingTo.text}
             </p>
           </div>
-          <button 
+          <button
             onClick={() => setReplyingTo?.(null)}
             className="rounded-full p-1 hover:bg-cream text-stone transition-colors"
           >
@@ -77,10 +77,10 @@ export function ChatInput({
               {/* Top Tabs */}
               <div className="flex px-2 pt-2 border-b border-[#e8e2d9]">
                 <button className="px-4 py-2 text-[13px] font-medium text-stone hover:text-near-black transition-colors">
-                  Sticker
+                  スタンプ
                 </button>
                 <button className="px-4 py-2 text-[13px] font-bold text-[#3b82f6] border-b-[3px] border-[#3b82f6]">
-                  Emoticon
+                  絵文字
                 </button>
               </div>
               
@@ -132,7 +132,7 @@ export function ChatInput({
               }
             }}
             rows={1}
-            placeholder="Enter your message (Enter: Send / Shift + Enter: New line)"
+            placeholder="メッセージを入力してください（Enter: 送信 / Shift + Enter: 改行）"
             className="w-full resize-none bg-transparent px-2 py-2 text-[15px] text-near-black placeholder:text-stone/80 focus:outline-none overflow-y-auto max-h-[150px] scrollbar-thin"
           />
           

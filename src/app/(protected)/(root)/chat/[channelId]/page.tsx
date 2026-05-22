@@ -76,7 +76,7 @@ export default function ChannelPage({
   if (!channel) {
     return (
       <div className="flex h-full items-center justify-center text-stone">
-        Channel not found
+        チャンネルが見つかりません
       </div>
     );
   }

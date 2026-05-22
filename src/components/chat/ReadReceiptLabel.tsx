@@ -51,11 +51,11 @@ export function ReadReceiptLabel({
           "flex items-center gap-0.5 text-[11px] text-[#3b82f6] transition-colors hover:text-blue-600 relative z-10",
           isMine ? "justify-end" : "justify-start"
         )}
-        title="See who read this"
+        title="既読者を確認"
       >
         <span className="font-semibold tracking-tighter">&lt;</span>
         <span className="font-semibold tracking-tight">
-          Read {readerCount}
+          既読 {readerCount}
         </span>
       </button>
 

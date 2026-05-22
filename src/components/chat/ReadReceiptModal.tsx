@@ -102,7 +102,7 @@ export function ReadReceiptModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-cream px-5 py-4 bg-background/50">
           <h3 className="text-[15px] font-semibold text-near-black">
-            Read By ({readerUids.length})
+            既読者 ({readerUids.length})
           </h3>
           <button
             onClick={onClose}
@@ -127,7 +127,7 @@ export function ReadReceiptModal({
                   : "text-stone hover:text-near-black hover:bg-cream/30"
               )}
             >
-              {t === "read" ? `Read (${readerUids.length})` : "Unread"}
+              {t === "read" ? `既読 (${readerUids.length})` : "未読"}
             </button>
           ))}
         </div>
@@ -146,7 +146,7 @@ export function ReadReceiptModal({
                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
                    </svg>
                 </div>
-                <p className="text-[13px] font-medium text-stone">No one has read this message yet.</p>
+                <p className="text-[13px] font-medium text-stone">まだ誰もこのメッセージを読んでいません。</p>
               </div>
             ) : (
               <ul className="divide-y divide-cream/30">
@@ -158,7 +158,7 @@ export function ReadReceiptModal({
                         {p.displayName}
                       </p>
                       <p className="truncate text-[11px] font-medium text-olive/70 uppercase tracking-tight">
-                        {p.role || "Member"}
+                        {p.role || "メンバー"}
                       </p>
                     </div>
                   </li>
@@ -167,7 +167,7 @@ export function ReadReceiptModal({
             )
           ) : (
             <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-               <p className="text-[13px] text-stone font-medium">Unread tracking is currently disabled.</p>
+               <p className="text-[13px] text-stone font-medium">未読トラッキングは現在無効になっています。</p>
             </div>
           )}
         </div>
