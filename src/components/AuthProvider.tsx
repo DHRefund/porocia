@@ -1,13 +1,13 @@
+// src/components/AuthProvider.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { User } from "firebase/auth";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { User, signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { listenAuthState } from "@/lib/firebase/auth";
-import { db } from "@/lib/firebase/client";
-import { createSessionCookieAction } from "@/lib/actions/auth";
+import { db, auth } from "@/lib/firebase/client";
+import { syncSessionIfNeededAction, validateSessionCookieAction, removeSessionCookieAction } from "@/lib/actions/auth";
 
-// Kiểu dữ liệu profile từ Firestore collection `users`
 export type UserProfile = {
   uid: string;
   email: string;
@@ -21,26 +21,49 @@ export type UserProfile = {
 
 type AuthContextType = {
   user: User | null;
-  profile: UserProfile | null;  // Firestore profile
+  profile: UserProfile | null;
   loading: boolean;
+  sessionReady: boolean;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  sessionReady: false,
+  logout: async () => {},
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [sessionReady, setSessionReady] = useState<boolean>(false);
+
+  const logout = async () => {
+    try {
+      // Remove server-side session first to avoid race conditions
+      await removeSessionCookieAction();
+      await signOut(auth);
+      setUser(null);
+      setProfile(null);
+      setSessionReady(false);
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
   useEffect(() => {
     let unsubscribeSnapshot: (() => void) | null = null;
 
+    // On mount, check whether a valid session cookie already exists
+    (async () => {
+      const uid = await validateSessionCookieAction();
+      setSessionReady(!!uid);
+    })();
+
     const unsubscribeAuth = listenAuthState(async (firebaseUser) => {
-      // Hủy listener Firestore cũ nếu user đổi
       if (unsubscribeSnapshot) {
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
@@ -49,16 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(firebaseUser);
 
       if (firebaseUser) {
-        // ĐỒNG BỘ SESSION: Nếu có user ở client, đảm bảo server cũng có cookie
-        // Điều này giúp fix lỗi "Header hiện user nhưng vào chat bị redirect về login"
         try {
           const idToken = await firebaseUser.getIdToken();
-          await createSessionCookieAction(idToken);
+          const { alreadySynced } = await syncSessionIfNeededAction(idToken);
+          setSessionReady(true);
         } catch (err) {
           console.error("Failed to sync auth session to server:", err);
+          setSessionReady(false);
         }
 
-        // Dùng onSnapshot để profile tự cập nhật realtime
         unsubscribeSnapshot = onSnapshot(
           doc(db, "users", firebaseUser.uid),
           (snap) => {
@@ -76,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setProfile(null);
         setLoading(false);
+        setSessionReady(false);
       }
     });
 
@@ -86,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading, sessionReady, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -12,13 +12,13 @@ import { toast } from "sonner";
 const navItems = [
   { label: "ホーム", href: "/" },
   { label: "チャット", href: "/chat" },
-  { label: "カレンダー", href: "/calendar" },
-  { label: "メンバー", href: "/people" },
-  { label: "ナレッジ", href: "/knowledge" },
+  { label: "予定表", href: "/calendar" },
+  { label: "メンバー一覧", href: "/people" },
+  { label: "ナレッジベース", href: "/knowledge" },
   { label: "お知らせ", href: "/announcements" },
-  { label: "プロフィール", href: "/profile" },
-  { label: "ダッシュボード", href: "/dashboard" },
-  { label: "ヘルプ", href: "/help" },
+  { label: "マイページ", href: "/profile" },
+  { label: "管理画面", href: "/dashboard" },
+  { label: "サポート", href: "/help" },
 ];
 
 const getInitials = (name: string) => {
@@ -83,9 +83,12 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative text-[15px] font-medium transition-all hover:text-near-black",
+                    "relative inline-block whitespace-nowrap text-[15px] font-medium transition-colors duration-300",
+                    "after:absolute after:bottom-[-6px] after:left-0 after:h-[2px] after:w-full",
+                    "after:origin-left after:scale-x-0 after:bg-terracotta after:transition-transform after:duration-300",
+                    "hover:after:scale-x-100 hover:text-near-black",
                     isActive
-                      ? "text-near-black font-semibold underline decoration-terracotta decoration-2 underline-offset-[6px]"
+                      ? "text-near-black font-semibold after:scale-x-100"
                       : "text-olive"
                   )}
                 >
@@ -135,7 +138,7 @@ export function SiteHeader() {
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-dark transition-colors hover:bg-cream"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
-                        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
                       </svg>
                       プロフィールを表示
                     </Link>
@@ -146,7 +149,7 @@ export function SiteHeader() {
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-dark transition-colors hover:bg-cream"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                       チャットへ移動
                     </Link>
@@ -159,7 +162,7 @@ export function SiteHeader() {
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-dark transition-colors hover:bg-[#fef0e4] hover:text-terracotta"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" />
                       </svg>
                       ログアウト
                     </button>

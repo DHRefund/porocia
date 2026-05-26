@@ -63,18 +63,18 @@ const FIREBASE_ERRORS: Record<string, string> = {
 
 export function SignInForm() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, loading, sessionReady } = useAuth()
 
   const [serverError, setServerError] = React.useState("")
   const [mode, setMode] = React.useState<"sign-in" | "sign-up">("sign-in")
 
   // Nếu user đã login ở client, tự động redirect luôn
   React.useEffect(() => {
-    if (!loading && user) {
-      const params = new URLSearchParams(window.location.search)
-      router.push(params.get("redirect") || "/")
+    if (!loading && user && sessionReady) {
+      const params = new URLSearchParams(window.location.search);
+      router.replace(params.get("redirect") || "/");
     }
-  }, [user, loading, router])
+  }, [user, loading, sessionReady, router]);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
