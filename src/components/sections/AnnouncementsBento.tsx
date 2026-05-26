@@ -1,9 +1,10 @@
 import { getAnnouncementsServer } from "@/lib/firebase/announcements-server";
 import Link from "next/link";
 import { ArrowUpRight, Megaphone } from "lucide-react";
+import Image from "next/image";
 
 export default async function AnnouncementsBento() {
-  "use cache";
+
   let announcements = [];
   try {
     announcements = await getAnnouncementsServer();
@@ -26,8 +27,8 @@ export default async function AnnouncementsBento() {
             </div>
             <h2 className="text-4xl md:text-5xl font-heading font-bold text-near-black">社内お知らせ</h2>
           </div>
-          <Link 
-            href="/announcements" 
+          <Link
+            href="/announcements"
             className="group flex items-center gap-2 text-stone font-bold text-sm uppercase tracking-widest hover:text-terracotta transition-colors pb-2"
           >
             すべて見る
@@ -39,14 +40,16 @@ export default async function AnnouncementsBento() {
         <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 h-[600px] md:h-[700px]">
           {/* Main Large Item */}
           {announcements[0] && (
-            <Link 
+            <Link
               href={`/announcements#announcement-${announcements[0].id}`}
               className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-[32px] bg-cream"
             >
-              <img 
-                src={announcements[0].imageURL || "https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&q=80"} 
+              <Image
+                src={announcements[0].imageURL || "/images/POROCIA.jpg"}
                 alt={announcements[0].title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                fill
+                sizes="(max-width: 768px) 100vw, 66vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 md:p-12 flex flex-col justify-end">
                 <h3 className="text-2xl md:text-4xl font-heading font-bold text-white leading-tight">
@@ -58,14 +61,16 @@ export default async function AnnouncementsBento() {
 
           {/* Smaller Item 1 */}
           {announcements[1] && (
-            <Link 
+            <Link
               href={`/announcements#announcement-${announcements[1].id}`}
               className="relative group overflow-hidden rounded-[32px] bg-cream"
             >
-              <img 
-                src={announcements[1].imageURL || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80"} 
+              <Image
+                src={announcements[1].imageURL || "/images/POROCIA.jpg"}
                 alt={announcements[1].title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent p-6 flex flex-col justify-end">
                 <h3 className="text-xl font-heading font-bold text-white leading-tight">
@@ -77,14 +82,15 @@ export default async function AnnouncementsBento() {
 
           {/* Smaller Item 2 */}
           {announcements[2] && (
-            <Link 
+            <Link
               href={`/announcements#announcement-${announcements[2].id}`}
               className="relative group overflow-hidden rounded-[32px] bg-cream"
             >
-              <img 
-                src={announcements[2].imageURL || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80"} 
+              <Image
+                src={announcements[2].imageURL || "/images/POROCIA.jpg"}
                 alt={announcements[2].title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                fill
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent p-6 flex flex-col justify-end">
                 <h3 className="text-xl font-heading font-bold text-white leading-tight">
