@@ -5,6 +5,7 @@ import { User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { listenAuthState } from "@/lib/firebase/auth";
 import { db } from "@/lib/firebase/client";
+import { createSessionCookieAction } from "@/lib/actions/auth";
 
 // Kiểu dữ liệu profile từ Firestore collection `users`
 export type UserProfile = {
@@ -50,16 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         // ĐỒNG BỘ SESSION: Nếu có user ở client, đảm bảo server cũng có cookie
         // Điều này giúp fix lỗi "Header hiện user nhưng vào chat bị redirect về login"
-        // try {
-        //   const idToken = await firebaseUser.getIdToken();
-        //   await fetch("/api/auth/session", {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({ idToken }),
-        //   });
-        // } catch (err) {
-        //   console.error("Failed to sync auth session to server:", err);
-        // }
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          await createSessionCookieAction(idToken);
+        } catch (err) {
+          console.error("Failed to sync auth session to server:", err);
+        }
 
         // Dùng onSnapshot để profile tự cập nhật realtime
         unsubscribeSnapshot = onSnapshot(

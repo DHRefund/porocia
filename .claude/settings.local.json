@@ -3,7 +3,12 @@
     "allow": [
       "Bash(Select-Object -Index 65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81)",
       "Bash(npm run *)",
-      "PowerShell(node --version)"
+      "PowerShell(node --version)",
+      "Bash(Get-ChildItem -Path \"g:\\\\porocia\\\\porocia\" -Force)",
+      "Bash(Select-Object Mode, Name)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(Get-ChildItem -Path \"g:\\\\porocia\\\\porocia\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

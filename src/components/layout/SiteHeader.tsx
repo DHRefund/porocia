@@ -18,6 +18,7 @@ const navItems = [
   { label: "お知らせ", href: "/announcements" },
   { label: "プロフィール", href: "/profile" },
   { label: "ダッシュボード", href: "/dashboard" },
+  { label: "ヘルプ", href: "/help" },
 ];
 
 const getInitials = (name: string) => {
