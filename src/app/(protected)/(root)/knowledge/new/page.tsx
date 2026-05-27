@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import ImageUploaderClient from "@/components/ImageUploaderClient";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
@@ -57,6 +58,24 @@ export default function NewArticlePage() {
   const [summary, setSummary] = useState("");
   const [category, setCategory] = useState("hr");
   const [content, setContent] = useState("");
+const textareaRef = useRef<HTMLTextAreaElement>(null);
+const insertMarkdownToken = (token: string) => {
+  const el = textareaRef.current;
+  if (!el) {
+    // Fallback: append token at end
+    setContent((prev) => prev + token);
+    return;
+  }
+  const start = el.selectionStart;
+  const end = el.selectionEnd;
+  const before = el.value.slice(0, start);
+  const after = el.value.slice(end);
+  const newValue = `${before}${token}${after}`;
+  setContent(newValue);
+  const newPos = start + token.length;
+  el.setSelectionRange(newPos, newPos);
+  el.focus();
+};
 
   const [scope, setScope] = useState<"all" | "group" | "admin">("all");
 
@@ -476,7 +495,9 @@ export default function NewArticlePage() {
                   </span>
                 </div>
 
+                <ImageUploaderClient onInsert={insertMarkdownToken} />
                 <textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={`# タイトル

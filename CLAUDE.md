@@ -1,30 +1,26 @@
-@AGENTS.md
-
 # Porocia Development Guide
-
+See [AGENTS.md](file:///g:/porocia/porocia/AGENTS.md) for Next.js agent rules.
 ## 1. Technology Stack
 
 - **Framework:** Next.js 16.2.4 (App Router)
 - **UI Library:** React 19, shadcn/ui, @base-ui/react, lucide-react
-- **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) with custom CSS variables in `globals.css`
+- **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) with custom CSS variables defined in `globals.css`.
 - **Backend & Database:** Firebase v12 (Client SDK) & Firebase Admin SDK v13 (Server-side)
-- **Forms & Validation:** react-hook-form + zod
+- **Forms & Validation:** react-hook-form + Zod
 
-## 2. Design System & Aesthetics (Claude-Inspired)
+## 2. Design System & Aesthetics (Claude‑Inspired)
 
-The project strictly follows a custom, warm-toned design system inspired by Anthropic's Claude. **Refer to `DESIGN.md` for complete guidelines.**
+The project follows a warm‑toned design system inspired by Anthropic's Claude. See `DESIGN.md` for full specifications.
 
-- **Canvas:** Warm parchment (`#f5f4ed`) and Ivory (`#faf9f5`) — no pure white backgrounds.
-- **Typography:** `Anthropic Serif` for headlines (weight 500 only), `Anthropic Sans` for UI, `Anthropic Mono` for code.
-- **Brand Colors:** Terracotta (`#c96442`), Anthropic Near Black (`#141413`).
-- **Neutrals:** Exclusively warm-toned (e.g., Olive Gray `#5e5d59`, Stone Gray `#87867f`). **No cool blue-grays.**
-- **Depth & Shadows:** Use warm ring shadows (`0px 0px 0px 1px`) for borders/depth. Avoid heavy drop shadows.
+- **Palette:** Warm parchment (`#f5f4ed`), Ivory (`#faf9f5`), Terracotta (`#c96442`), Near Black (`#141413`), Olive Gray (`#5e5d59`), Stone Gray (`#87867f`). No cool blues.
+- **Typography:** Anthropic Serif for headings, Anthropic Sans for UI, Anthropic Mono for code.
+- **Depth:** Subtle warm ring shadows (`0px 0px 0px 1px`) instead of heavy drop shadows.
 
 ## 3. Architecture & Key Modules
 
 ### Project Structure
 
-```text
+```
 src/
 ├── app/
 │   ├── (root)/
@@ -34,6 +30,7 @@ src/
 ├── components/
 │   ├── chat/
 │   └── auth-provider.tsx
+│   └── ImageUploaderClient.tsx
 ├── lib/
 │   └── firebase/
 │       ├── client.ts
@@ -45,32 +42,35 @@ src/
     └── use-channels.ts
 ```
 
-### Authentication Flow (Robust Server-Side Sessions)
+### Authentication Flow
 
-- **Strategy:** Combines Firebase Client Auth with Secure Server-Side Cookies.
+- **Strategy:** Firebase Client Auth combined with secure server‑side session cookies.
 - **Implementation:**
-  - User signs in via Client SDK (`src/lib/firebase/auth.ts`).
-  - Next.js API Route (`/api/auth/session`) generates an HTTP-only Session Cookie using Firebase Admin SDK.
-  - Route Protection is handled strictly on the server via Layouts/Middleware (`src/app/(root)/layout.tsx`) using `adminAuth.verifySessionCookie`.
-- **Profile Synchronization:** User data is synced to the Firestore `users` collection upon login. The `AuthProvider` (`src/components/auth-provider.tsx`) uses `onSnapshot` to provide real-time profile updates across the application without reloading.
+  - User signs in via the Client SDK (`src/lib/firebase/auth.ts`).
+  - A Next.js API route (`/api/auth/session`) creates an HTTP‑only session cookie using the Admin SDK.
+  - Middleware/Layout (`src/app/(root)/layout.tsx`) protects routes by verifying the session cookie.
+- **Profile Sync:** User data is stored in the `users` Firestore collection and kept in sync via the `AuthProvider` component.
 
-### Chat Module Architecture
+### Chat Module
 
-- **Structure:** App Router layout-based design (`src/app/(root)/chat/layout.tsx`) with a persistent `Sidebar`.
-- **Data Fetching:** Handled via custom hooks (`use-chat.ts`, `use-channels.ts`) that interface with Firestore.
-- **Features:** Real-time messaging using `onSnapshot`, infinite scrolling/pagination (`getOlderMessages`), and channel management.
-- **Components:** Logic is modularized into `ChatPanel`, `ChatInput`, `ChatBubble`, and `Sidebar` under `src/components/chat/`.
+- **Layout:** App Router layout (`src/app/(root)/chat/layout.tsx`) with a persistent sidebar.
+- **Data Layer:** Custom hooks (`use-chat.ts`, `use-channels.ts`) interface with Firestore for real‑time messaging, pagination, and channel management.
+- **Components:** `ChatPanel`, `ChatInput`, `ChatBubble`, `Sidebar` under `src/components/chat/`.
 
 ### Firebase Configuration
 
-- **Schema:** Refer to `DB_SCHEMA.md` for the complete Firestore database schema.
-- **Client:** `src/lib/firebase/client.ts` (Uses `experimentalForceLongPolling` for stability).
-- **Admin:** `src/lib/firebase/server.ts` (Server-only operations).
-- **Helper Modules:** `auth.ts` and `chat.ts` contain abstracted Firestore and Auth operations.
+- **Client:** `src/lib/firebase/client.ts` (uses `experimentalForceLongPolling` for reliability).
+- **Server:** `src/lib/firebase/server.ts` for admin‑only operations.
+- **Helpers:** `auth.ts` and `chat.ts` abstract Firestore and authentication logic.
 
 ## 4. Coding Conventions
 
-- **App Router:** Adhere strictly to Next.js App Router paradigms (Server Components by default).
-- **Client Components:** Use `"use client"` directive at the very top of the file only when using React hooks (useState, useEffect, context) or DOM event listeners.
-- **Environment Variables:** Use `NEXT_PUBLIC_` for client-side Firebase keys. Keep Admin private keys secure on the server.
-- **Styling:** Use Tailwind CSS utility classes and `cn()` from `src/lib/utils.ts` for conditional class merging. Leverage custom CSS variables defined in `globals.css` (e.g., `bg-[--color-terracotta]`).
+- **App Router:** Prefer Server Components; add `"use client"` only when needed.
+- **TypeScript:** Strict mode enabled; use interfaces/types for all props and data structures.
+- **Styling:** Tailwind utility classes combined with `cn()` from `src/lib/utils.ts`. Custom CSS variables are defined in `globals.css`.
+- **Environment Variables:** Prefix client‑side Firebase keys with `NEXT_PUBLIC_`; keep admin credentials server‑only.
+- **Naming:** Follow PascalCase for components, camelCase for functions and hooks, and kebab‑case for file names.
+
+---
+
+*This guide is version‑controlled; keep it up to date with any architectural changes.*
