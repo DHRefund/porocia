@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 
 /**
  * Direct client‑side upload to Cloudinary using an **unsigned** upload preset.
@@ -60,15 +61,21 @@ export default function ImageUploaderClient({ onInsert }: Props) {
   };
 
   const handleFile = async (file: File) => {
+    const toastId = toast.loading("画像をアップロード中...");
     try {
       setUploading(true);
       const url = await uploadToCloudinary(file);
 
       // Insert standard markdown image syntax — works with react-markdown out of the box
       onInsert(`![image](${url})`);
+      toast.success("画像のアップロードに成功しました", { id: toastId });
     } catch (e) {
       console.error(e);
-      alert("Upload ảnh thất bại: " + (e instanceof Error ? e.message : String(e)));
+      toast.error(
+        "画像のアップロードに失敗しました: " +
+          (e instanceof Error ? e.message : String(e)),
+        { id: toastId }
+      );
     } finally {
       setUploading(false);
       // Reset input so the same file can be re-uploaded if needed
@@ -111,7 +118,7 @@ export default function ImageUploaderClient({ onInsert }: Props) {
                 d="M4 12a8 8 0 018-8v8z"
               />
             </svg>
-            Đang tải…
+            アップロード中…
           </>
         ) : (
           <>
@@ -130,7 +137,7 @@ export default function ImageUploaderClient({ onInsert }: Props) {
               <circle cx="8.5" cy="8.5" r="1.5" />
               <polyline points="21 15 16 10 5 21" />
             </svg>
-            Thêm ảnh
+            画像を追加
           </>
         )}
       </button>
