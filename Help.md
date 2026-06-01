@@ -32,7 +32,7 @@ Firebase Authentication + セッションCookieによる堅牢なサーバーサ
 ### 技術詳細
 - **クライアント**: Firebase Client SDK (`src/lib/firebase/auth.ts`)
 - **サーバー**: Firebase Admin SDK (`src/lib/firebase/server.ts`)
-- **セッションAPI**: `/api/auth/session` でセッションCookie生成
+- **セッション管理**: Next.js Server Action (`src/lib/actions/auth.ts`) でセッションCookie (`__session`) 生成・管理
 - **保護ルート**: Layout/Middlewareで `adminAuth.verifySessionCookie` による検証
 
 ---
@@ -376,8 +376,6 @@ src/
 │   │   │   └── profile/
 │   │   └── (admin)/
 │   │       └── dashboard/
-│   └── api/
-│       └── auth/session/
 ├── components/
 │   ├── chat/
 │   ├── calendar/
@@ -385,6 +383,8 @@ src/
 │   ├── sections/
 │   └── ui/
 ├── lib/
+│   ├── actions/
+│   │   └── auth.ts
 │   └── firebase/
 │       ├── client.ts
 │       ├── server.ts

@@ -47,7 +47,7 @@ src/
 - **Strategy:** Firebase Client Auth combined with secure server‑side session cookies.
 - **Implementation:**
   - User signs in via the Client SDK (`src/lib/firebase/auth.ts`).
-  - A Next.js API route (`/api/auth/session`) creates an HTTP‑only session cookie using the Admin SDK.
+  - Next.js Server Actions (`src/lib/actions/auth.ts`) manage the HTTP‑only session cookie (`__session`) using the Admin SDK.
   - Middleware/Layout (`src/app/(root)/layout.tsx`) protects routes by verifying the session cookie.
 - **Profile Sync:** User data is stored in the `users` Firestore collection and kept in sync via the `AuthProvider` component.
 

@@ -79,6 +79,18 @@ export async function updateArticle(articleId: string, data: Partial<Omit<Articl
  */
 export async function deleteArticle(articleId: string): Promise<void> {
   const articleRef = doc(db, "articles", articleId);
+  const snap = await getDoc(articleRef);
+  if (snap.exists()) {
+    const data = snap.data() as Article;
+    const urlRegex = /!\[.*?\]\((https?:\/\/res\.cloudinary\.com\/[^)]+)\)/g;
+    const matches = Array.from(data.content?.matchAll(urlRegex) || []);
+    if (matches.length > 0) {
+      const { deleteImageByUrl } = await import('./cloudinary');
+      for (const m of matches) {
+        await deleteImageByUrl(m[1]);
+      }
+    }
+  }
   await deleteDoc(articleRef);
 }
 
