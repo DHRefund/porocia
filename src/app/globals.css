@@ -176,6 +176,155 @@
   --sidebar-ring: #3898ec;
 }
 
+@layer components {
+
+  /* Word slider */
+  .slide {
+    display: inline-block;
+    height: 1.2em;
+    overflow: hidden;
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    animation: wordSlider 21s infinite cubic-bezier(0.9, 0.01, 0.3, 0.99);
+  }
+
+  @keyframes wordSlider {
+    0% {
+      transform: translateY(0.5%);
+    }
+
+    12.5% {
+      transform: translateY(-12.5%);
+    }
+
+    25% {
+      transform: translateY(-25%);
+    }
+
+    37.5% {
+      transform: translateY(-37.5%);
+    }
+
+    50% {
+      transform: translateY(-50%);
+    }
+
+    62.5% {
+      transform: translateY(-62.5%);
+    }
+
+    75% {
+      transform: translateY(-75%);
+    }
+
+    87.5% {
+      transform: translateY(-87.5%);
+    }
+  }
+
+  .hero-text .static-wo {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  /* CTA button */
+  /* CTA button - ĐÃ SỬA */
+  .cta-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 1rem;
+    background-color: var(--color-terracotta);
+    /* Màu cam làm nền chính mặc định */
+    cursor: pointer;
+    padding: 0 1.25rem;
+    height: 56px;
+    min-width: 220px;
+    text-decoration: none;
+  }
+
+  .cta-btn-sm {
+    min-width: 180px;
+  }
+
+  .btn-blob {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    translate: 0 -50%;
+    width: 0%;
+    /* <-- SỬA: Ẩn đi mặc định thay vì 140% */
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    background-color: var(--color-ivory);
+    /* Màu kem */
+    transition: width 0.5s cubic-bezier(0.7, 0, 0.3, 1), left 0.5s cubic-bezier(0.7, 0, 0.3, 1);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cta-btn:hover .btn-blob {
+    width: 120%;
+    /* <-- SỬA: Phóng to để lấp đầy nút khi hover */
+    left: -10%;
+  }
+
+  .btn-label {
+    position: relative;
+    z-index: 1;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ivory);
+    /* <-- SỬA: Chữ màu sáng để nổi bật trên nền cam mặc định */
+    transition: color 0.4s ease, transform 0.4s ease;
+    flex: 1;
+    white-space: nowrap;
+  }
+
+  .cta-btn:hover .btn-label {
+    color: var(--color-near-black);
+    /* <-- SỬA: Chữ màu tối khi nền kem tràn vào */
+    transform: translateX(4px);
+    /* Dịch nhẹ sang phải tạo cảm giác động */
+  }
+
+  .btn-arrow {
+    position: relative;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    background-color: var(--color-ivory);
+    /* <-- SỬA: Nền sáng mặc định cho icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.4s ease;
+    overflow: hidden;
+    margin-left: 12px;
+  }
+
+  .cta-btn:hover .btn-arrow {
+    background-color: var(--color-terracotta);
+    /* <-- SỬA: Nền cam khi hover, tạo hiệu ứng "cutout" đẹp mắt */
+  }
+
+  .btn-arrow img {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
