@@ -3,6 +3,7 @@ import HeroSection from "@/components/sections/Hero";
 import AnnouncementsBento from "@/components/sections/AnnouncementsBento";
 
 import EditorialQuoteSection from "@/components/sections/EditorialQuoteSection";
+import FeatureCards from "@/components/sections/FeatureCards";
 
 
 export default function HomePage() {
@@ -30,6 +31,7 @@ export default function HomePage() {
             }>
                 <AnnouncementsBento />
             </Suspense>
+            <FeatureCards />
             <EditorialQuoteSection />
         </>
     );

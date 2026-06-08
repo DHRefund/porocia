@@ -10,36 +10,81 @@ See [AGENTS.md](file:///g:/porocia/porocia/AGENTS.md) for Next.js agent rules.
 
 ## 2. Design System & Aesthetics (Claude‑Inspired)
 
-The project follows a warm‑toned design system inspired by Anthropic's Claude. See `DESIGN.md` for full specifications.
+Porocia は Anthropic の「Claude」インターフェースにインスパイアされた **プレミアム＆エディトリアル** デザインシステムを採用しています。以下に主要なカラートークン、タイポグラフィ規則、シャドウシステムを示します。
 
-- **Palette:** Warm parchment (`#f5f4ed`), Ivory (`#faf9f5`), Terracotta (`#c96442`), Near Black (`#141413`), Olive Gray (`#5e5d59`), Stone Gray (`#87867f`). No cool blues.
-- **Typography:** Anthropic Serif for headings, Anthropic Sans for UI, Anthropic Mono for code.
-- **Depth:** Subtle warm ring shadows (`0px 0px 0px 1px`) instead of heavy drop shadows.
+### カラーパレット
 
-## 3. Architecture & Key Modules
+| トークン名 | カラーコード | デザイン上の役割 |
+|---|---|---|
+| **Parchment** | `#f5f4ed` | メイン背景色 |
+| **Ivory** | `#faf9f5` | カード・コンテナ背景 |
+| **Pure White** | `#ffffff` | アクションボタン・高コントラスト要素 |
+| **Near Black** | `#141413` | プライマリテキスト・ダークテーマ背景 |
+| **Charcoal Warm** | `#4d4c48` | セカンダリアクションテキスト・アイコン |
+| **Olive Gray** | `#5e5d59` | メタ情報・サブテキスト |
+| **Stone Gray** | `#87867f` | 補助テキスト・脚注 |
+| **Terracotta Brand** | `#c96442` | 重要CTA |
+| **Border Cream** | `#f0eee6` | 薄い境界線 |
+| **Border Warm** | `#e8e6dc` | インタラクティブ要素区切り線 |
+| **Focus Blue** | `#3898ec` | フォーカスリング（アクセシビリティ） |
 
-### Project Structure
+### タイポグラフィ
+
+- **見出し (Headlines)** – Anthropic Serif または Georgia、ウェイトは `500` に統一。
+- **本文・UI (Body/UI)** – Inter または Arial、行高は `1.60`。
+- **コード** – Anthropic Mono。
+
+### 深度・シャドウ
+
+- 従来の暗いドロップシャドウは使用せず、 **Ring‑shadow** (`0px 0px 0px 1px`) をホバー時に適用。
+- 浮遊コンテナは薄い **Whisper Shadow** (`rgba(20,20,19,0.04) 0px 4px 24px`) を使用。
+
+## 3. ディレクトリ構成 / Directory Structure
+
+Next.js App Routerの標準に準拠し、ソースコードは `/src` ディレクトリ以下に整理されています。
 
 ```
 src/
-├── app/
-│   ├── (root)/
-│   │   ├── chat/
-│   │   └── layout.tsx
-│
-├── components/
-│   ├── chat/
-│   └── auth-provider.tsx
-│   └── ImageUploaderClient.tsx
-├── lib/
-│   └── firebase/
-│       ├── client.ts
-│       ├── server.ts
-│       ├── auth.ts
-│       └── chat.ts
-└── hooks/
-    ├── use-chat.ts
-    └── use-channels.ts
+├── app/                              # Next.js App Routerのメインディレクトリ
+│   ├── (auth)/                       # 認証関連のルートグループ
+│   │   ├── login/                    # ログイン画面
+│   │   └── register/                 # 新規社員登録画面
+│   ├── (protected)/                  # ログイン必須のプライベートルート
+│   │   ├── layout.tsx                # セキュリティガード、AuthContextの設定
+│   │   ├── (admin)/                  # 管理者専用機能
+│   │   │   └── admin/                # 管理者ダッシュボード、ロール管理、グループ管理
+│   │   └── (root)/                   # 一般ユーザー向け主要機能
+│   │       ├── layout.tsx            # ナビゲーションサイドバー、ヘッダーの配置
+│   │       ├── page.tsx              # ホームダッシュボード
+│   │       ├── announcements/        # 社内掲示板モジュール
+│   │       ├── calendar/             # カレンダー・スケジュールモジュール
+│   │       ├── chat/                 # リアルタイムチャットモジュール
+│   │       ├── knowledge/            # ナベッジベース（Wiki）モジュール
+│   │       ├── people/               # 社員名簿・プロフィール検索モジュール
+│   │       └── profile/              # プロフィール自己管理モジュール
+│   ├── layout.tsx                    # ルート共通レイアウト（フォント、Toaster設定）
+│   └── globals.css                   # CSS変数、カスタムユーティリティの定義
+├── components/                       # 再利用可能なReactコンポーネント
+│   ├── ui/                           # 基本ボタン、インプット、バッジなどの共通UI
+│   ├── chat/                         # チャット専用コンポーネント（チャットルーム、メッセージ項目）
+│   ├── calendar/                     # カレンダー専用コンポーネント（予定作成モーダル）
+│   └── knowledge/                    # ナレッジ用コンポーネント（Markdownエディタ等）
+├── hooks/                            # カスタムReactフック
+│   ├── useAuth.ts                    # ログイン状態およびユーザープロフィール管理フック
+│   ├── useChat.ts                    # 特定チャットルームのメッセージ監視フック
+│   └── useChannels.ts                # チャットルーム一覧監視フック
+├── lib/                              # 外部ライブラリおよびAPIヘルパー
+│   ├── utils.ts                      # スタイリング結合（cn）等の共通ユーティリティ
+│   └── firebase/                     # Firebase SDKの初期化およびデータアクセス層
+│       ├── client.ts                 # クライアント側Firebase SDK初期化
+│       ├── server.ts                 # サーバー側Firebase Admin SDK初期化
+│       ├── auth.ts                   # ログイン、ログアウト、権限管理API
+│       ├── chat.ts                   # チャット、DM、既読状態、リアクション制御API
+│       ├── events.ts                 # カレンダー予定（CRUD、リアルタイム同期）API
+│       ├── knowledge.ts              # ナレッジ（Markdown保存、閲覧数、いいね、コメント）API
+│       ├── announcements.ts          # 掲示板（ピン留め、リアクション、コメント）API
+│       └── cloudinary.ts             # サーバー側Cloudinary画像削除処理API
+└── proxy.ts                          # プロキシ設定
 ```
 
 ### Authentication Flow

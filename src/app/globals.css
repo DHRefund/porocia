@@ -70,6 +70,11 @@
   --color-warm: var(--border-warm);
   --color-terracotta: var(--terracotta);
   --color-silver: var(--warm-silver);
+  --color-charcoal-warm: var(--charcoal-warm);
+  --color-muted-brown: var(--muted-brown);
+  --color-warm-gold: var(--warm-gold);
+  --color-dark-parchment: var(--dark-parchment);
+  --color-deep-olive: var(--deep-olive);
 }
 
 :root {
@@ -85,7 +90,12 @@
   --border-warm: #e8e6dc;
   --terracotta: #c96442;
   --warm-silver: #b0aea5;
-
+  /* New Warm Dark Palette Tokens */
+  --charcoal-warm: #22221f;
+  --muted-brown: #4d4c48;
+  --warm-gold: #c96442;
+  --dark-parchment: #f5f4ed;
+  --deep-olive: #3d3d3a;
   /* shadcn tokens mapped to warm palette */
   --background: var(--parchment);
   --foreground: var(--near-black);

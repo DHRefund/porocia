@@ -45,7 +45,7 @@ export function Sidebar() {
         newChannelType
       );
       toast.success(`チャンネル「#${newChannelName}」を作成しました！`);
-      
+
       // Reset form & close modal
       setNewChannelName("");
       setNewChannelDesc("");
@@ -84,7 +84,7 @@ export function Sidebar() {
         {/* Sidebar Header with Plus Button */}
         <div className="p-4 border-b border-warm/20 flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-widest uppercase text-near-black">Channels</h2>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="p-1 hover:bg-cream rounded-md text-stone hover:text-near-black transition-colors"
             title="新しいチャンネルを作成"
@@ -170,7 +170,7 @@ export function Sidebar() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-near-black/30 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
           />
@@ -186,7 +186,7 @@ export function Sidebar() {
             </button>
 
             <h3 className="text-xl font-bold font-heading mb-6 text-near-black">新しいチャンネルを作成</h3>
-            
+
             <form onSubmit={handleCreateChannel} className="space-y-5">
               {/* Type Selection Option (Pills style) */}
               <div className="space-y-1.5">
@@ -268,7 +268,7 @@ export function Sidebar() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-6 py-2.5 bg-terracotta text-ivory rounded-2xl text-xs font-bold hover:bg-[#bf5d3c] disabled:opacity-50 transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-lg shadow-terracotta/15"
+                  className="px-6 py-2.5 bg-terracotta text-ivory rounded-2xl text-xs font-bold hover:bg-[#4d4c48] disabled:opacity-50 transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-lg shadow-charcoal-warm/15"
                 >
                   {creating ? (
                     <>
