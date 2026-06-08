@@ -6,6 +6,9 @@ import ImageUploaderClient from "@/components/ImageUploaderClient";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { useAuth } from "@/components/AuthProvider";
 import { getAllGroups, Group } from "@/lib/firebase/members";
@@ -45,45 +48,94 @@ const STEPS = [
   { id: 3, label: "公開", icon: Save },
 ];
 
+// ── Define Zod Schema for validation ──
+const articleSchema = z
+  .object({
+    title: z.string().min(1, "タイトルを入力してください。"),
+    summary: z.string().optional(),
+    category: z.string().default("hr"),
+    tagsInput: z.string().optional(),
+    scope: z.enum(["all", "group", "admin"]).default("all"),
+    allowedGroups: z.array(z.string()).default([]),
+    content: z.string().min(1, "本文を入力してください。"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.scope === "group" && data.allowedGroups.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "少なくとも1つのグループを選択してください。",
+        path: ["allowedGroups"],
+      });
+    }
+  });
+
+type ArticleFormValues = z.infer<typeof articleSchema>;
+
 export default function NewArticlePage() {
   const router = useRouter();
   const { user } = useAuth();
 
   const [step, setStep] = useState(1);
-
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
-
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [category, setCategory] = useState("hr");
-  const [content, setContent] = useState("");
-const textareaRef = useRef<HTMLTextAreaElement>(null);
-const insertMarkdownToken = (token: string) => {
-  const el = textareaRef.current;
-  if (!el) {
-    // Fallback: append token at end
-    setContent((prev) => prev + token);
-    return;
-  }
-  const start = el.selectionStart;
-  const end = el.selectionEnd;
-  const before = el.value.slice(0, start);
-  const after = el.value.slice(end);
-  const newValue = `${before}${token}${after}`;
-  setContent(newValue);
-  const newPos = start + token.length;
-  el.setSelectionRange(newPos, newPos);
-  el.focus();
-};
-
-  const [scope, setScope] = useState<"all" | "group" | "admin">("all");
-
-  const [allowedGroups, setAllowedGroups] = useState<string[]>([]);
-
-  const [tagsInput, setTagsInput] = useState("");
-
   const [saving, setSaving] = useState(false);
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // ── Initialize React Hook Form ──
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    getValues,
+    trigger,
+    reset,
+    formState: { errors },
+  } = useForm<ArticleFormValues>({
+    resolver: zodResolver(articleSchema),
+    defaultValues: {
+      title: "",
+      summary: "",
+      category: "hr",
+      tagsInput: "",
+      scope: "all",
+      allowedGroups: [],
+      content: "",
+    },
+  });
+
+  // Watch fields for reactive UI rendering
+  const title = watch("title");
+  const summary = watch("summary") || "";
+  const category = watch("category");
+  const tagsInput = watch("tagsInput") || "";
+  const scope = watch("scope");
+  const allowedGroups = watch("allowedGroups");
+  const content = watch("content");
+
+  const insertMarkdownToken = (token: string) => {
+    const el = textareaRef.current;
+    if (!el) {
+      // Fallback: append token at end
+      setValue("content", content + token, { shouldValidate: true });
+      return;
+    }
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const before = el.value.slice(0, start);
+    const after = el.value.slice(end);
+    const newValue = `${before}${token}${after}`;
+    
+    setValue("content", newValue, { shouldValidate: true });
+    
+    // Maintain cursor position after rendering
+    setTimeout(() => {
+      const newPos = start + token.length;
+      el.setSelectionRange(newPos, newPos);
+      el.focus();
+    }, 0);
+  };
 
   useEffect(() => {
     async function fetchGroups() {
@@ -92,7 +144,7 @@ const insertMarkdownToken = (token: string) => {
         setGroups(data);
       } catch (error) {
         console.error(error);
-        toast.error("グループ一覧の取得に失敗しました。");
+        toast.error("グループ一覧 của 取得に失敗しました。");
       } finally {
         setLoadingGroups(false);
       }
@@ -102,11 +154,11 @@ const insertMarkdownToken = (token: string) => {
   }, []);
 
   const handleGroupToggle = (groupId: string) => {
-    setAllowedGroups((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
-    );
+    const currentList = getValues("allowedGroups");
+    const newList = currentList.includes(groupId)
+      ? currentList.filter((id) => id !== groupId)
+      : [...currentList, groupId];
+    setValue("allowedGroups", newList, { shouldValidate: true });
   };
 
   const parsedTags = useMemo(() => {
@@ -123,31 +175,26 @@ const insertMarkdownToken = (token: string) => {
 
   const catInfo = CATEGORIES.find((c) => c.id === category);
 
-  const handleNextToPreview = () => {
-    if (!title.trim()) {
-      toast.warning("タイトルを入力してください。");
-      return;
+  const handleNextToPreview = async () => {
+    const isValid = await trigger(["title", "content", "scope", "allowedGroups"]);
+    if (isValid) {
+      setStep(2);
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } else {
+      if (errors.title) {
+        toast.warning(errors.title.message);
+      } else if (errors.content) {
+        toast.warning(errors.content.message);
+      } else if (errors.allowedGroups) {
+        toast.warning(errors.allowedGroups.message);
+      }
     }
-
-    if (!content.trim()) {
-      toast.warning("本文を入力してください。");
-      return;
-    }
-
-    if (scope === "group" && allowedGroups.length === 0) {
-      toast.warning("少なくとも1つのグループを選択してください。");
-      return;
-    }
-
-    setStep(2);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
   };
 
-  const handlePublish = async () => {
+  const onPublish = async (data: ArticleFormValues) => {
     if (!user) {
       toast.error("ログイン情報が見つかりません。");
       return;
@@ -157,15 +204,22 @@ const insertMarkdownToken = (token: string) => {
       setSaving(true);
       setStep(3);
 
+      const parsedTags = data.tagsInput
+        ? data.tagsInput
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : [];
+
       const authorName = user.displayName || user.email?.split("@")[0] || "ユーザー";
       const fd = new FormData();
-      fd.append("title", title.trim());
-      fd.append("summary", summary.trim());
-      fd.append("content", content);
-      fd.append("category", category);
+      fd.append("title", data.title.trim());
+      fd.append("summary", data.summary?.trim() || "");
+      fd.append("content", data.content);
+      fd.append("category", data.category);
       fd.append("tags", JSON.stringify(parsedTags));
-      fd.append("scope", scope);
-      fd.append("allowedGroups", JSON.stringify(scope === "group" ? allowedGroups : []));
+      fd.append("scope", data.scope);
+      fd.append("allowedGroups", JSON.stringify(data.scope === "group" ? data.allowedGroups : []));
       fd.append("authorName", authorName);
       fd.append("authorPhoto", user.photoURL || "");
 
@@ -174,14 +228,12 @@ const insertMarkdownToken = (token: string) => {
         throw new Error(result.error);
       }
 
+      reset();
       toast.success("記事を正常に公開しました！");
-
       router.push("/knowledge");
     } catch (error) {
       console.error(error);
-
       toast.error("公開に失敗しました。");
-
       setStep(2);
     } finally {
       setSaving(false);
@@ -231,13 +283,11 @@ const insertMarkdownToken = (token: string) => {
   return (
     <div className="bg-[#faf8f4] min-h-[calc(100vh-5rem)] p-6 lg:p-12 text-near-black">
       <div className="max-w-4xl mx-auto space-y-8">
-
         {/* Back Button */}
         <button
           onClick={() => {
             if (step > 1) {
               setStep(step - 1);
-
               window.scrollTo({
                 top: 0,
                 behavior: "smooth",
@@ -249,17 +299,13 @@ const insertMarkdownToken = (token: string) => {
           className="flex items-center gap-2 text-stone hover:text-near-black transition-colors text-xs font-bold"
         >
           <ArrowLeft size={16} />
-
-          {step === 1
-            ? "ナレッジベースに戻る"
-            : "前のステップに戻る"}
+          {step === 1 ? "ナレッジベースに戻る" : "前のステップに戻る"}
         </button>
 
         {/* Step Indicator */}
         <div className="flex items-center justify-center gap-0">
           {STEPS.map((s, idx) => {
             const StepIcon = s.icon;
-
             const isActive = step === s.id;
             const isCompleted = step > s.id;
 
@@ -276,13 +322,8 @@ const insertMarkdownToken = (token: string) => {
                           : "bg-cream/40 border-cream text-stone/40"
                     )}
                   >
-                    {isCompleted ? (
-                      <Check size={16} strokeWidth={3} />
-                    ) : (
-                      <StepIcon size={16} />
-                    )}
+                    {isCompleted ? <Check size={16} strokeWidth={3} /> : <StepIcon size={16} />}
                   </div>
-
                   <span
                     className={cn(
                       "text-[10px] font-bold transition-colors",
@@ -301,9 +342,7 @@ const insertMarkdownToken = (token: string) => {
                   <div
                     className={cn(
                       "w-20 h-0.5 mx-3 mb-5 rounded-full transition-colors duration-300",
-                      step > s.id
-                        ? "bg-terracotta"
-                        : "bg-cream"
+                      step > s.id ? "bg-terracotta" : "bg-cream"
                     )}
                   />
                 )}
@@ -315,30 +354,21 @@ const insertMarkdownToken = (token: string) => {
         {/* STEP 1 */}
         {step === 1 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-
             <div>
-              <h1 className="text-3xl font-heading font-bold">
-                記事を作成
-              </h1>
-
-              <p className="text-stone text-sm mt-1">
-                内容を入力して次へ進んでください。
-              </p>
+              <h1 className="text-3xl font-heading font-bold">記事を作成</h1>
+              <p className="text-stone text-sm mt-1">内容を入力して次へ進んでください。</p>
             </div>
 
             {/* Main Form */}
             <div className="bg-white border border-cream rounded-3xl p-6 shadow-sm space-y-6">
-
               {/* Title */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-stone uppercase tracking-widest">
                   記事タイトル
                 </label>
-
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  {...register("title")}
                   placeholder="記事タイトルを入力..."
                   className="w-full px-4 py-3 bg-ivory/30 border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 text-sm"
                 />
@@ -349,11 +379,9 @@ const insertMarkdownToken = (token: string) => {
                 <label className="text-[10px] font-bold text-stone uppercase tracking-widest">
                   概要（任意）
                 </label>
-
                 <input
                   type="text"
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
+                  {...register("summary")}
                   placeholder="概要を入力..."
                   className="w-full px-4 py-3 bg-ivory/30 border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 text-sm"
                 />
@@ -361,15 +389,12 @@ const insertMarkdownToken = (token: string) => {
 
               {/* Category + Tags */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-stone uppercase tracking-widest">
                     カテゴリー
                   </label>
-
                   <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    {...register("category")}
                     className="w-full px-4 py-3 bg-ivory/30 border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 text-sm"
                   >
                     {CATEGORIES.map((cat) => (
@@ -385,11 +410,9 @@ const insertMarkdownToken = (token: string) => {
                     <TagIcon size={12} />
                     タグ
                   </label>
-
                   <input
                     type="text"
-                    value={tagsInput}
-                    onChange={(e) => setTagsInput(e.target.value)}
+                    {...register("tagsInput")}
                     placeholder="React, Next.js, Firebase"
                     className="w-full px-4 py-3 bg-ivory/30 border border-cream rounded-xl focus:outline-none focus:ring-2 focus:ring-terracotta/20 text-sm"
                   />
@@ -398,16 +421,14 @@ const insertMarkdownToken = (token: string) => {
 
               {/* Scope */}
               <div className="space-y-2 border-t border-cream/50 pt-4">
-
                 <label className="text-[10px] font-bold text-stone uppercase tracking-widest">
                   公開範囲
                 </label>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
                   <button
                     type="button"
-                    onClick={() => setScope("all")}
+                    onClick={() => setValue("scope", "all", { shouldValidate: true })}
                     className={cn(
                       "flex items-center gap-2 p-3.5 rounded-2xl border text-left transition-all font-bold text-xs",
                       scope === "all"
@@ -421,7 +442,7 @@ const insertMarkdownToken = (token: string) => {
 
                   <button
                     type="button"
-                    onClick={() => setScope("group")}
+                    onClick={() => setValue("scope", "group", { shouldValidate: true })}
                     className={cn(
                       "flex items-center gap-2 p-3.5 rounded-2xl border text-left transition-all font-bold text-xs",
                       scope === "group"
@@ -435,7 +456,7 @@ const insertMarkdownToken = (token: string) => {
 
                   <button
                     type="button"
-                    onClick={() => setScope("admin")}
+                    onClick={() => setValue("scope", "admin", { shouldValidate: true })}
                     className={cn(
                       "flex items-center gap-2 p-3.5 rounded-2xl border text-left transition-all font-bold text-xs",
                       scope === "admin"
@@ -451,14 +472,12 @@ const insertMarkdownToken = (token: string) => {
                 {/* Groups */}
                 {scope === "group" && (
                   <div className="p-4 bg-ivory/40 border border-cream rounded-2xl space-y-2 mt-2">
-
                     {loadingGroups ? (
                       <Loader2 className="w-4 h-4 animate-spin text-terracotta" />
                     ) : (
                       <div className="grid grid-cols-2 gap-2">
                         {groups.map((group) => {
                           const checked = allowedGroups.includes(group.id);
-
                           return (
                             <label
                               key={group.id}
@@ -467,12 +486,9 @@ const insertMarkdownToken = (token: string) => {
                               <input
                                 type="checkbox"
                                 checked={checked}
-                                onChange={() =>
-                                  handleGroupToggle(group.id)
-                                }
+                                onChange={() => handleGroupToggle(group.id)}
                                 className="accent-terracotta"
                               />
-
                               {group.name}
                             </label>
                           );
@@ -485,35 +501,16 @@ const insertMarkdownToken = (token: string) => {
 
               {/* Markdown Editor */}
               <div className="space-y-2">
-
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] font-bold text-stone uppercase tracking-widest">
                     本文
                   </label>
-
-                  <span className="text-[10px] text-stone">
-                    Markdown対応
-                  </span>
+                  <span className="text-[10px] text-stone">Markdown対応</span>
                 </div>
 
                 <ImageUploaderClient onInsert={insertMarkdownToken} />
                 <textarea
-                  ref={textareaRef}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder={`# タイトル
-
-## サブタイトル
-
-- リスト
-- リスト
-
-**太字**
-
-\`\`\`ts
-const hello = "world";
-\`\`\`
-`}
+                  placeholder={`# タイトル\n\n## サブタイトル\n\n- リスト\n- リスト\n\n**太字**\n\n\`\`\`ts\nconst hello = "world";\n\`\`\`\n`}
                   rows={18}
                   className={cn(
                     "w-full px-4 py-4",
@@ -522,13 +519,17 @@ const hello = "world";
                     "font-mono text-sm leading-7",
                     "resize-y"
                   )}
+                  {...register("content")}
+                  ref={(e) => {
+                    register("content").ref(e);
+                    textareaRef.current = e;
+                  }}
                 />
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex items-center justify-between">
-
               <button
                 type="button"
                 onClick={() => router.push("/knowledge")}
@@ -543,7 +544,6 @@ const hello = "world";
                 className="px-8 py-3 bg-terracotta text-white rounded-2xl text-xs font-bold hover:bg-[#bf5d3c] transition-all flex items-center gap-1.5"
               >
                 次へ：プレビュー
-
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -553,34 +553,24 @@ const hello = "world";
         {/* STEP 2 */}
         {step === 2 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-
             <div>
-              <h1 className="text-3xl font-heading font-bold">
-                プレビュー
-              </h1>
-
-              <p className="text-stone text-sm mt-1">
-                公開前に内容を確認してください。
-              </p>
+              <h1 className="text-3xl font-heading font-bold">プレビュー</h1>
+              <p className="text-stone text-sm mt-1">公開前に内容を確認してください。</p>
             </div>
 
             <div className="bg-white border border-cream rounded-[32px] p-8 lg:p-10 shadow-sm space-y-6">
-
               {/* Header */}
               <div className="border-b border-cream/50 pb-6 space-y-4">
-
                 <div className="flex items-center gap-2">
                   <span className="px-2.5 py-0.5 bg-[#f0ede6] border border-cream text-stone text-[10px] font-bold rounded-md">
                     {catInfo?.name}
                   </span>
-
                   {scope === "admin" && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-red-50 text-red-600 border border-red-200">
                       <Shield size={10} />
                       管理者のみ
                     </span>
                   )}
-
                   {scope === "group" && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                       <Lock size={10} />
@@ -589,9 +579,7 @@ const hello = "world";
                   )}
                 </div>
 
-                <h1 className="text-4xl font-extrabold font-heading leading-tight">
-                  {title}
-                </h1>
+                <h1 className="text-4xl font-extrabold font-heading leading-tight">{title}</h1>
 
                 {summary && (
                   <p className="text-xs text-stone/80 bg-ivory/30 border border-cream rounded-xl p-4 italic leading-relaxed">
@@ -600,37 +588,24 @@ const hello = "world";
                 )}
 
                 <div className="flex items-center justify-between">
-
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-cream border border-cream overflow-hidden flex items-center justify-center">
-
                       {user?.photoURL ? (
-                        <img
-                          src={user.photoURL}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <User size={14} />
                       )}
                     </div>
-
                     <div>
                       <p className="text-xs font-bold">
-                        {user?.displayName ||
-                          user?.email?.split("@")[0] ||
-                          "ユーザー"}
+                        {user?.displayName || user?.email?.split("@")[0] || "ユーザー"}
                       </p>
-
-                      <p className="text-[10px] text-stone">
-                        公開予定
-                      </p>
+                      <p className="text-[10px] text-stone">公開予定</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1 text-[10px] text-stone font-bold">
                     <Clock size={11} />
-
                     {getReadTime(content)}分
                   </div>
                 </div>
@@ -650,14 +625,11 @@ const hello = "world";
               </div>
 
               {/* Markdown Preview */}
-              <div className="min-h-[200px]">
-                {renderContent(content)}
-              </div>
+              <div className="min-h-[200px]">{renderContent(content)}</div>
             </div>
 
             {/* Actions */}
             <div className="flex items-center justify-between">
-
               <button
                 type="button"
                 onClick={() => setStep(1)}
@@ -669,7 +641,7 @@ const hello = "world";
 
               <button
                 type="button"
-                onClick={handlePublish}
+                onClick={handleSubmit(onPublish)}
                 disabled={saving}
                 className="px-8 py-3 bg-terracotta text-white rounded-2xl text-xs font-bold hover:bg-[#bf5d3c] disabled:opacity-50 transition-all flex items-center gap-1.5"
               >
@@ -693,14 +665,8 @@ const hello = "world";
         {step === 3 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-terracotta" />
-
-            <p className="text-sm font-bold">
-              記事を公開しています...
-            </p>
-
-            <p className="text-xs text-stone">
-              しばらくお待ちください。
-            </p>
+            <p className="text-sm font-bold">記事を公開しています...</p>
+            <p className="text-xs text-stone">しばらくお待ちください。</p>
           </div>
         )}
       </div>
