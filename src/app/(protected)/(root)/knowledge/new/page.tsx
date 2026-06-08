@@ -9,7 +9,7 @@ import rehypeSanitize from "rehype-sanitize";
 
 import { useAuth } from "@/components/AuthProvider";
 import { getAllGroups, Group } from "@/lib/firebase/members";
-import { createArticle } from "@/lib/firebase/knowledge";
+import { createArticle } from "@/lib/actions/knowledge";
 import { cn } from "@/lib/utils";
 
 import {
@@ -157,21 +157,22 @@ const insertMarkdownToken = (token: string) => {
       setSaving(true);
       setStep(3);
 
-      await createArticle({
-        title: title.trim(),
-        summary: summary.trim(),
-        content,
-        category,
-        tags: parsedTags,
-        scope,
-        allowedGroups: scope === "group" ? allowedGroups : [],
-        createdBy: user.uid,
-        authorName:
-          user.displayName ||
-          user.email?.split("@")[0] ||
-          "ユーザー",
-        authorPhoto: user.photoURL || "",
-      });
+      const authorName = user.displayName || user.email?.split("@")[0] || "ユーザー";
+      const fd = new FormData();
+      fd.append("title", title.trim());
+      fd.append("summary", summary.trim());
+      fd.append("content", content);
+      fd.append("category", category);
+      fd.append("tags", JSON.stringify(parsedTags));
+      fd.append("scope", scope);
+      fd.append("allowedGroups", JSON.stringify(scope === "group" ? allowedGroups : []));
+      fd.append("authorName", authorName);
+      fd.append("authorPhoto", user.photoURL || "");
+
+      const result = await createArticle(fd);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       toast.success("記事を正常に公開しました！");
 

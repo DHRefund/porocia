@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── User notification subcollection ──
+    // Only the owning user may read or update (mark as read).
+    // Creates and deletes are blocked on the client — only
+    // the Firebase Admin SDK (server actions) may write new
+    // notification documents.
+    match /users/{uid}/notifications/{notifId} {
+      allow read, update: if request.auth != null && request.auth.uid == uid;
+      allow create, delete: if false;
+    }
+  }
+}

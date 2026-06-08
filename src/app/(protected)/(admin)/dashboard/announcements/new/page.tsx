@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { createAnnouncement } from "@/lib/firebase/announcements";
+import { createAnnouncement } from "@/lib/actions/announcements";
 import { addCalendarEvent } from "@/lib/firebase/events";
 import { 
   ArrowLeft, 
@@ -125,16 +125,22 @@ export default function NewAnnouncementPage() {
         }
       }
 
-      await createAnnouncement({
-        title,
-        content,
-        type,
-        isPinned,
-        imageURL,
-        authorId: user.uid,
-        authorName: profile?.displayName || user.email?.split("@")[0] || "Admin",
-        calendarEventId,
-      });
+      // ── Create announcement via server action (Admin SDK + notification fan-out) ──
+      const authorName = profile?.displayName || user.email?.split("@")[0] || "Admin";
+      const fd = new FormData();
+      fd.append("title", title);
+      fd.append("content", content);
+      fd.append("type", type);
+      fd.append("isPinned", String(isPinned));
+      if (imageURL) fd.append("imageURL", imageURL);
+      fd.append("authorName", authorName);
+      if (calendarEventId) fd.append("calendarEventId", calendarEventId);
+
+      const result = await createAnnouncement(fd);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       // Clear form
       setTitle("");

@@ -8,6 +8,7 @@ import EventDetailModal from "@/components/calendar/EventDetailModal";
 import { Calendar as CalendarIcon, Plus, Menu, Loader2 } from "lucide-react";
 import { Views, View } from 'react-big-calendar';
 import { subscribeToEvents, addCalendarEvent, deleteCalendarEvent, updateCalendarEvent, CalendarEvent, CalendarScope } from "@/lib/firebase/events";
+import { createEvent } from "@/lib/actions/events";
 import { getAllGroups, Group } from '@/lib/firebase/members'
 import { toast } from 'sonner';
 import { useAuth } from "@/components/AuthProvider";
@@ -100,19 +101,24 @@ export default function CalendarPage() {
     }
 
     try {
-      await addCalendarEvent({
-        title: newEventData.title,
-        start: newEventData.start,
-        end: newEventData.end,
-        type: newEventData.type,
-        scope: newEventData.scope || 'company',
-        groupId: newEventData.groupId || '',
-        groupName: newEventData.groupName || '',
-        createdBy: user.uid,
-        creatorName: profile?.displayName || user.displayName || "Unknown User",
-      })
+      const fd = new FormData();
+      fd.append("title", newEventData.title);
+      fd.append("start", newEventData.start.toISOString());
+      fd.append("end", newEventData.end.toISOString());
+      fd.append("type", newEventData.type || "event");
+      fd.append("scope", newEventData.scope || "company");
+      fd.append("groupId", newEventData.groupId || "");
+      fd.append("groupName", newEventData.groupName || "");
+      fd.append("creatorName", profile?.displayName || user.displayName || "Unknown User");
+
+      const result = await createEvent(fd);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      toast.success("イベントを追加しました");
     } catch (error) {
-      toast.error("イベントの保存に失敗しました")
+      console.error("Failed to add calendar event:", error);
+      toast.error(error instanceof Error ? error.message : "イベントの保存に失敗しました")
     }
   }
 
