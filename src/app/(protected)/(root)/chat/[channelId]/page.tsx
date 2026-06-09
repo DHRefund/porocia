@@ -161,7 +161,7 @@ export default function ChannelPage({
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
       {/* Header */}
-      <div className="flex h-16 items-center justify-between border-b border-warm/20 px-6 bg-background/95 backdrop-blur-sm z-20 shrink-0">
+      <div className="flex h-16 items-center justify-between border-b border-warm/30 px-6 bg-ivory/95 backdrop-blur-sm z-20 shrink-0">
         <div className="flex items-center min-w-0">
           <h3 className="text-sm font-bold tracking-widest uppercase text-near-black flex items-center gap-2 truncate">
             <span className="text-terracotta opacity-50">
