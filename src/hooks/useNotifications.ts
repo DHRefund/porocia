@@ -23,6 +23,8 @@ export interface Notification {
   link: string;
   read: boolean;
   createdAt: Timestamp;
+  actorName?: string;
+  actorPhotoURL?: string;
 }
 
 /**

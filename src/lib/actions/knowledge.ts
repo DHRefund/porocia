@@ -70,10 +70,12 @@ export async function createArticle(formData: FormData): Promise<
           .collection("notifications")
           .add({
             type: "knowledge",
-            title: `📚 ${title}`,
-            body: summary || content.slice(0, 100),
+            title,
+            body: summary || content.slice(0, 120),
             link: `/knowledge/${articleId}`,
             read: false,
+            actorName: authorName,
+            actorPhotoURL: authorPhoto,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
           })
       );

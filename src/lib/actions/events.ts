@@ -53,7 +53,11 @@ export async function createEvent(formData: FormData): Promise<
 
     const eventId = eventRef.id;
 
-    // ── 4. Fan-out notifications to all users ──
+    // ── 4. Fetch creator's photo for rich notifications ──
+    const creatorDoc = await adminDb.collection("users").doc(uid).get();
+    const actorPhotoURL: string = creatorDoc.data()?.photoURL || "";
+
+    // ── 5. Fan-out notifications to all users ──
     const usersSnapshot = await adminDb.collection("users").get();
 
     const formattedDate = startDate.toLocaleDateString("ja-JP", {
@@ -72,10 +76,12 @@ export async function createEvent(formData: FormData): Promise<
           .collection("notifications")
           .add({
             type: "event",
-            title: `📅 ${title}`,
+            title,
             body: formattedDate,
             link: "/calendar",
             read: false,
+            actorName: creatorName,
+            actorPhotoURL,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
           })
       );

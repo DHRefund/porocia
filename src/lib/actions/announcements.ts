@@ -49,7 +49,11 @@ export async function createAnnouncement(formData: FormData): Promise<
 
     const announcementId = announcementRef.id;
 
-    // ── 4. Fan-out notifications to all users ──
+    // ── 4. Fetch creator's photo for rich notifications ──
+    const creatorDoc = await adminDb.collection("users").doc(uid).get();
+    const actorPhotoURL: string = creatorDoc.data()?.photoURL || "";
+
+    // ── 5. Fan-out notifications to all users ──
     const usersSnapshot = await adminDb.collection("users").get();
 
     const notificationPromises = usersSnapshot.docs
@@ -61,10 +65,12 @@ export async function createAnnouncement(formData: FormData): Promise<
           .collection("notifications")
           .add({
             type: "announcement",
-            title: `📢 ${title}`,
-            body: content.slice(0, 100),
+            title,
+            body: content.slice(0, 120),
             link: `/announcements#announcement-${announcementId}`,
             read: false,
+            actorName: authorName,
+            actorPhotoURL,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
           })
       );

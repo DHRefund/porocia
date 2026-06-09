@@ -2,14 +2,15 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { logout } from "@/lib/firebase/auth"
 import { useChannels } from "@/hooks/useChannels"
 import { useAuth } from "@/components/AuthProvider"
 import { useNotifications } from "@/hooks/useNotifications"
+import type { Notification } from "@/hooks/useNotifications"
 import { toast } from "sonner"
-import { Bell } from "lucide-react"
+import { Bell, CheckCheck, Megaphone, CalendarDays, BookOpen } from "lucide-react"
 
 const navItems = [
   { label: "ホーム", href: "/" },
@@ -30,6 +31,43 @@ const getInitials = (name: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 
+function getTypeIcon(type: Notification["type"]) {
+  switch (type) {
+    case "announcement": return <Megaphone className="w-3.5 h-3.5" />;
+    case "event":        return <CalendarDays className="w-3.5 h-3.5" />;
+    case "knowledge":    return <BookOpen className="w-3.5 h-3.5" />;
+  }
+}
+
+function getTypeBg(type: Notification["type"]) {
+  switch (type) {
+    case "announcement": return "bg-terracotta/10 text-terracotta";
+    case "event":        return "bg-blue-500/10 text-blue-600";
+    case "knowledge":    return "bg-emerald-500/10 text-emerald-600";
+  }
+}
+
+function getActionLabel(type: Notification["type"]) {
+  switch (type) {
+    case "announcement": return "がお知らせを投稿しました";
+    case "event":        return "がイベントを追加しました";
+    case "knowledge":    return "が記事を投稿しました";
+  }
+}
+
+function formatRelativeTime(ts: import("firebase/firestore").Timestamp | undefined): string {
+  if (!ts) return "";
+  const diffMs = Date.now() - ts.toMillis();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1)  return "今";
+  if (diffMin < 60) return `${diffMin}分前`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24)   return `${diffH}時間前`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 7)    return `${diffD}日前`;
+  return ts.toDate().toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
@@ -39,6 +77,10 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const markAllRead = useCallback(() => {
+    notifications.forEach((n) => markAsRead(n.id));
+  }, [notifications, markAsRead]);
 
   const displayName = profile?.displayName || user?.email?.split("@")[0] || "ユーザー";
 
@@ -141,31 +183,109 @@ export function SiteHeader() {
 
               {/* Notification dropdown */}
               {notifOpen && (
-                <div className="absolute right-10 top-[calc(100%+10px)] z-50 w-80 overflow-hidden rounded-2xl border border-[#e8e2d9] bg-[#faf8f4] shadow-[0_12px_40px_rgba(0,0,0,0.14)]">
-                  <div className="border-b border-cream px-4 py-3 text-sm font-semibold text-near-black">
-                    通知
+                <div className="absolute right-10 top-[calc(100%+10px)] z-50 w-96 overflow-hidden rounded-2xl border border-[#e8e2d9] bg-[#faf8f4] shadow-[0_16px_48px_rgba(0,0,0,0.16)]">
+                  {/* Header */}
+                  <div className="flex items-center justify-between border-b border-cream px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-near-black">通知</span>
+                      {unreadCount > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-terracotta px-1.5 text-[10px] font-bold text-ivory">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-stone transition-colors hover:bg-cream hover:text-near-black"
+                      >
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        全て既読
+                      </button>
+                    )}
                   </div>
-                  <div className="max-h-72 overflow-y-auto">
+
+                  {/* List */}
+                  <div className="max-h-[420px] overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <p className="px-4 py-8 text-center text-sm text-stone">
-                        通知はありません
-                      </p>
+                      <div className="flex flex-col items-center gap-3 px-4 py-10">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cream">
+                          <Bell className="w-5 h-5 text-stone" />
+                        </div>
+                        <p className="text-sm text-stone">通知はありません</p>
+                      </div>
                     ) : (
                       notifications.map((n) => (
                         <Link
                           key={n.id}
                           href={n.link}
                           onClick={() => { markAsRead(n.id); setNotifOpen(false); }}
-                          className="block border-b border-cream/50 px-4 py-3 transition-colors hover:bg-cream last:border-b-0"
+                          className="group flex gap-3 border-b border-cream/60 px-4 py-3.5 transition-colors hover:bg-cream/60 last:border-b-0"
                         >
-                          <p className="text-[13px] font-medium text-near-black">{n.title}</p>
-                          {n.body && (
-                            <p className="mt-0.5 text-[12px] text-stone">{n.body}</p>
-                          )}
+                          {/* Actor avatar */}
+                          <div className="relative mt-0.5 shrink-0">
+                            {n.actorPhotoURL ? (
+                              <img
+                                src={n.actorPhotoURL}
+                                alt={n.actorName || ""}
+                                className="h-9 w-9 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2a2a27] text-[11px] font-bold text-ivory">
+                                {getInitials(n.actorName || "?")}
+                              </div>
+                            )}
+                            {/* Type badge */}
+                            <span className={cn(
+                              "absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full border border-[#faf8f4]",
+                              getTypeBg(n.type)
+                            )}>
+                              {getTypeIcon(n.type)}
+                            </span>
+                          </div>
+
+                          {/* Text */}
+                          <div className="min-w-0 flex-1">
+                            {n.actorName && (
+                              <p className="text-[12px] text-stone leading-snug">
+                                <span className="font-semibold text-near-black">{n.actorName}</span>
+                                {getActionLabel(n.type)}
+                              </p>
+                            )}
+                            <p className="mt-0.5 text-[13px] font-semibold text-near-black leading-snug line-clamp-1 group-hover:text-terracotta transition-colors">
+                              {n.title}
+                            </p>
+                            {n.body && (
+                              <p className="mt-0.5 text-[12px] text-stone leading-snug line-clamp-2">
+                                {n.body}
+                              </p>
+                            )}
+                            <p className="mt-1 text-[11px] text-warm-silver">
+                              {formatRelativeTime(n.createdAt)}
+                            </p>
+                          </div>
+
+                          {/* Unread dot */}
+                          <div className="mt-2 shrink-0">
+                            <span className="block h-2 w-2 rounded-full bg-terracotta" />
+                          </div>
                         </Link>
                       ))
                     )}
                   </div>
+
+                  {/* Footer */}
+                  {notifications.length > 0 && (
+                    <div className="border-t border-cream">
+                      <Link
+                        href="/announcements"
+                        onClick={() => setNotifOpen(false)}
+                        className="block px-4 py-2.5 text-center text-[12px] font-medium text-stone transition-colors hover:bg-cream hover:text-near-black"
+                      >
+                        すべての通知を見る →
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
 
