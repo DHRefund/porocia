@@ -53,10 +53,10 @@ const articleSchema = z
   .object({
     title: z.string().min(1, "タイトルを入力してください。"),
     summary: z.string().optional(),
-    category: z.string().default("hr"),
+    category: z.string(),
     tagsInput: z.string().optional(),
-    scope: z.enum(["all", "group", "admin"]).default("all"),
-    allowedGroups: z.array(z.string()).default([]),
+    scope: z.enum(["all", "group", "admin"]),
+    allowedGroups: z.array(z.string()),
     content: z.string().min(1, "本文を入力してください。"),
   })
   .superRefine((data, ctx) => {
